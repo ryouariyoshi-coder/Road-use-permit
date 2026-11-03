@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>道路使用許可申請書作成ツール</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      color: #23332f;
+      background: #f5f7f4;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --ink: #23332f;
+      --muted: #667570;
+      --line: #dce4df;
+      --green: #176b53;
+      --soft-green: #e8f2ed;
+      --paper: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: #f5f7f4;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      padding: 0 5vw;
+      color: #fff;
+      background: #183c33;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border: 1px solid #6f9c8b;
+      border-radius: 10px;
+      color: #b6d8c8;
+      font-size: 19px;
+    }
+
+    .topbar-note {
+      color: #d5e5dd;
+      font-size: 12px;
+    }
+
+    main {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 36px 5vw 64px;
+    }
+
+    .intro {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 32px);
+      letter-spacing: .02em;
+    }
+
+    .intro-copy {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .notice {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin: 0 0 24px;
+      padding: 14px 16px;
+      border: 1px solid #ead8a9;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #66542c;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .notice-icon {
+      flex: 0 0 auto;
+      font-size: 16px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, .82fr) minmax(480px, 1.18fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .editor,
+    .preview-panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 8px 28px rgb(34 55 46 / 5%);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .step {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .editor-body {
+      padding: 22px;
+    }
+
+    .form-section + .form-section {
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid #edf1ee;
+    }
+
+    .form-section h3 {
+      margin: 0 0 16px;
+      font-size: 13px;
+    }
+
+    .field {
+      display: block;
+      margin-top: 15px;
+    }
+
+    .field:first-of-type {
+      margin-top: 0;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+      color: #44534e;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .required {
+      color: #a23c30;
+      font-size: 10px;
+    }
+
+    .field input,
+    .field textarea {
+      display: block;
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid #d5ded9;
+      border-radius: 7px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .field textarea {
+      min-height: 76px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: #479477;
+      box-shadow: 0 0 0 3px rgb(71 148 119 / 13%);
+    }
+
+    .field-help {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .privacy-note {
+      margin: 20px 0 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f3f6f4;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .preview-panel {
+      position: sticky;
+      top: 20px;
+    }
+
+    .preview-heading {
+      align-items: flex-start;
+    }
+
+    .preview-heading p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .draft-badge {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: var(--soft-green);
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .paper-wrap {
+      padding: 24px;
+      overflow: auto;
+      background: #f0f3f0;
+    }
+
+    .paper {
+      width: min(100%, 700px);
+      min-height: 760px;
+      margin: 0 auto;
+      padding: 46px 48px;
+      border: 1px solid #d7dcd8;
+      background: #fff;
+      box-shadow: 0 4px 16px rgb(20 35 28 / 8%);
+      color: #222;
+      font-family: "Yu Mincho", "游明朝", serif;
+      font-size: 12px;
+    }
+
+    .paper-title {
+      margin: 0 0 30px;
+      text-align: center;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+
+    .paper-date {
+      margin: 0 0 24px;
+      text-align: right;
+    }
+
+    .police-line {
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .editable {
+      min-width: 36px;
+      min-height: 1.5em;
+      padding: 1px 3px;
+      border-bottom: 1px dotted #8f9b95;
+      outline: none;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .editable:focus {
+      border-bottom: 1px solid var(--green);
+      background: #f1f8f4;
+    }
+
+    .editable:empty::before {
+      color: #9aa49f;
+      content: attr(data-placeholder);
+    }
+
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .form-table th,
+    .form-table td {
+      padding: 12px 10px;
+      border: 1px solid #5b625e;
+      vertical-align: top;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .form-table th {
+      width: 28%;
+      background: #fafafa;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .form-table td {
+      min-height: 50px;
+    }
+
+    .paper-note {
+      margin: 18px 0 0;
+      color: #626a65;
+      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        padding-right: 24px;
+        padding-left: 24px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        min-height: 60px;
+        padding: 0 18px;
+      }
+
+      .topbar-note {
+        display: none;
+      }
+
+      main {
+        padding: 26px 14px 40px;
+      }
+
+      .panel-heading,
+      .editor-body {
+        padding: 17px;
+      }
+
+      .paper-wrap {
+        padding: 12px;
+      }
+
+      .paper {
+        min-height: 680px;
+        padding: 30px 22px;
+      }
+
+      .form-table th,
+      .form-table td {
+        padding: 9px 7px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">道</span>
+      <span>道路使用許可申請書作成ツール</span>
+    </div>
+    <span class="topbar-note">現場書類を、ひとつの画面で。</span>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">ROAD USE PERMIT</p>
+      <h1 id="page-title">申請書を作成する</h1>
+      <p class="intro-copy">現場の情報を入力すると、右側の申請書プレビューに反映されます。書類上の文字を直接クリックして編集することもできます。</p>
+    </section>
+
+    <aside class="notice" aria-label="ご利用前の確認">
+      <span class="notice-icon" aria-hidden="true">!</span>
+      <span>この画面は初期版です。<a href="https://www.npa.go.jp/bureau/traffic/seibi2/shinsei-todokede/dourosiyoukyoka/permission.html" target="_blank" rel="noopener noreferrer">警察庁公開の「別記様式第六」</a>を参考にしていますが、書式の細かな配置や都道府県警察ごとの追加要件は確認中です。提出前に管轄警察署へ最新様式と必要書類をご確認ください。</span>
+    </aside>
+
+    <div class="workspace">
+      <section class="editor" aria-labelledby="editor-title">
+        <div class="panel-heading">
+          <h2 id="editor-title">申請情報</h2>
+          <span class="step">STEP 1 / 5</span>
+        </div>
+        <div class="editor-body">
+          <div class="form-section">
+            <h3>申請の基本情報</h3>
+            <label class="field">
+              <span class="field-label">申請日</span>
+              <input type="text" data-input="applicationDate" placeholder="例：令和8年4月1日">
+            </label>
+            <label class="field">
+              <span class="field-label">提出先の警察署名</span>
+              <input type="text" data-input="policeStation" placeholder="例：〇〇警察署長">
+              <p class="field-help">住所からの自動判定は行いません。管轄を確認して入力してください。</p>
+            </label>
+            <label class="field">
+              <span class="field-label">申請者住所</span>
+              <input type="text" data-input="applicantAddress" autocomplete="street-address" placeholder="住所を入力">
+            </label>
+            <label class="field">
+              <span class="field-label">申請者氏名</span>
+              <input type="text" data-input="applicantName" autocomplete="name" placeholder="会社名・氏名">
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>道路の使用内容</h3>
+            <label class="field">
+              <span class="field-label">道路使用の目的</span>
+              <textarea data-input="purpose" placeholder="例：給排水管敷設工事"></textarea>
+            </label>
+            <label class="field">
+              <span class="field-label">場所または区間 <span class="required">必須</span></span>
+              <input type="text" data-input="location" autocomplete="street-address" placeholder="現場住所・道路名など" required>
+            </label>
+            <label class="field">
+              <span class="field-label">道路を使用する期間</span>
+              <input type="text" data-input="period" placeholder="例：令和8年4月1日から令和8年4月3日まで">
+            </label>
+            <label class="field">
+              <span class="field-label">使用方法または形態</span>
+              <textarea data-input="method" placeholder="作業内容、時間帯、交通誘導の方法など"></textarea>
+            </label>
+            <label class="field">
+              <span class="field-label">添付書類</span>
+              <textarea data-input="attachments" placeholder="例：付近見取図、作業体図、現場写真"></textarea>
+            </label>
+          </div>
+
+          <div class="form-section">
+            <h3>現場責任者</h3>
+            <label class="field">
+              <span class="field-label">住所</span>
+              <input type="text" data-input="managerAddress" autocomplete="street-address" placeholder="現場責任者の住所">
+            </label>
+            <label class="field">
+              <span class="field-label">氏名</span>
+              <input type="text" data-input="managerName" autocomplete="name" placeholder="現場責任者の氏名">
+            </label>
+            <label class="field">
+              <span class="field-label">電話番号</span>
+              <input type="tel" data-input="managerPhone" autocomplete="tel" placeholder="例：090-0000-0000">
+            </label>
+          </div>
+
+          <p class="privacy-note">この初期版では入力内容をブラウザー内に保存しません。ページを閉じると入力内容は失われます。保存機能は後続段階で追加します。</p>
+        </div>
+      </section>
+
+      <section class="preview-panel" aria-labelledby="preview-title">
+        <div class="panel-heading preview-heading">
+          <div>
+            <h2 id="preview-title">申請書プレビュー</h2>
+            <p>書類上の文字をクリックして直接編集できます。</p>
+          </div>
+          <span class="draft-badge">作成中</span>
+        </div>
+        <div class="paper-wrap">
+          <article class="paper" aria-label="道路使用許可申請書プレビュー">
+            <h2 class="paper-title">道路使用許可申請書</h2>
+            <p class="paper-date"><span class="editable" data-preview="applicationDate" data-placeholder="申請日" contenteditable="true" role="textbox" aria-label="申請日"></span></p>
+            <div class="police-line"><span class="editable" data-preview="policeStation" data-placeholder="提出先警察署長" contenteditable="true" role="textbox" aria-label="提出先の警察署名"></span> 殿</div>
+
+            <table class="form-table">
+              <tbody>
+                <tr>
+                  <th scope="row">申請者住所</th>
+                  <td><span class="editable" data-preview="applicantAddress" data-placeholder="申請者住所" contenteditable="true" role="textbox" aria-label="申請者住所"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">申請者氏名</th>
+                  <td><span class="editable" data-preview="applicantName" data-placeholder="申請者氏名" contenteditable="true" role="textbox" aria-label="申請者氏名"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">道路使用の目的</th>
+                  <td><span class="editable" data-preview="purpose" data-placeholder="道路使用の目的" contenteditable="true" role="textbox" aria-label="道路使用の目的"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">場所または区間</th>
+                  <td><span class="editable" data-preview="location" data-placeholder="現場住所・道路名など" contenteditable="true" role="textbox" aria-label="使用場所または区間"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">使用期間</th>
+                  <td><span class="editable" data-preview="period" data-placeholder="使用する期間" contenteditable="true" role="textbox" aria-label="道路を使用する期間"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">使用方法または形態</th>
+                  <td><span class="editable" data-preview="method" data-placeholder="使用方法または形態" contenteditable="true" role="textbox" aria-label="使用方法または形態"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">添付書類</th>
+                  <td><span class="editable" data-preview="attachments" data-placeholder="添付書類" contenteditable="true" role="textbox" aria-label="添付書類"></span></td>
+                </tr>
+                <tr>
+                  <th scope="row">現場責任者</th>
+                  <td>
+                    住所：<span class="editable" data-preview="managerAddress" data-placeholder="住所" contenteditable="true" role="textbox" aria-label="現場責任者の住所"></span><br>
+                    氏名：<span class="editable" data-preview="managerName" data-placeholder="氏名" contenteditable="true" role="textbox" aria-label="現場責任者の氏名"></span><br>
+                    電話：<span class="editable" data-preview="managerPhone" data-placeholder="電話番号" contenteditable="true" role="textbox" aria-label="現場責任者の電話番号"></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="paper-note">※ このプレビューは入力確認用です。正式な提出様式・添付書類・提出部数は管轄警察署にご確認ください。</p>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <footer>申請書の最新様式・提出条件は、提出先の警察署でご確認ください。</footer>
+  </main>
+
+  <script>
+    (() => {
+      const inputs = new Map(
+        [...document.querySelectorAll("[data-input]")].map((element) => [element.dataset.input, element])
+      );
+      const previews = [...document.querySelectorAll("[data-preview]")];
+
+      function updatePreviews(name, value) {
+        previews
+          .filter((element) => element.dataset.preview === name)
+          .forEach((element) => {
+            if (element.textContent !== value) {
+              element.textContent = value;
+            }
+          });
+      }
+
+      inputs.forEach((input, name) => {
+        input.addEventListener("input", () => updatePreviews(name, input.value));
+      });
+
+      previews.forEach((preview) => {
+        preview.addEventListener("input", () => {
+          const name = preview.dataset.preview;
+          const value = preview.textContent;
+          const input = inputs.get(name);
+          if (input && input.value !== value) {
+            input.value = value;
+          }
+          previews
+            .filter((element) => element.dataset.preview === name && element !== preview)
+            .forEach((element) => {
+              element.textContent = value;
+            });
+        });
+
+        preview.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            preview.blur();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
