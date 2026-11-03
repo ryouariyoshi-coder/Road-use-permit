@@ -274,88 +274,199 @@
 
     .paper {
       width: min(100%, 700px);
-      min-height: 760px;
+      aspect-ratio: 210 / 297;
       margin: 0 auto;
-      padding: 46px 48px;
+      padding: 5.8% 6.2% 4.5%;
       border: 1px solid #d7dcd8;
       background: #fff;
       box-shadow: 0 4px 16px rgb(20 35 28 / 8%);
       color: #222;
       font-family: "Yu Mincho", "游明朝", serif;
-      font-size: 12px;
+      font-size: clamp(7px, 1.55vw, 11px);
+    }
+
+    .form-reference {
+      margin: 0 0 6px;
+      font-size: .72em;
     }
 
     .paper-title {
-      margin: 0 0 30px;
+      margin: 0 0 3%;
       text-align: center;
-      font-family: "Yu Gothic UI", "Meiryo", sans-serif;
-      font-size: 21px;
+      font-family: "Yu Mincho", "游明朝", serif;
+      font-size: 1.55em;
       font-weight: 700;
-      letter-spacing: .18em;
+      letter-spacing: .38em;
     }
 
     .paper-date {
-      margin: 0 0 24px;
+      margin: 0 0 1.6%;
       text-align: right;
+      letter-spacing: .2em;
     }
 
     .police-line {
-      margin-bottom: 24px;
-      font-size: 14px;
+      margin-bottom: 1%;
+      font-size: 1.05em;
+      letter-spacing: .18em;
     }
 
-    .editable {
-      min-width: 36px;
-      min-height: 1.5em;
-      padding: 1px 3px;
-      border-bottom: 1px dotted #8f9b95;
-      outline: none;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
+    .applicant-block {
+      display: grid;
+      justify-items: end;
+      gap: 2px;
+      min-height: 7%;
+      padding: 0 2% 2%;
+      text-align: right;
+      letter-spacing: .12em;
     }
 
-    .editable:focus {
-      border-bottom: 1px solid var(--green);
-      background: #f1f8f4;
+    .applicant-row {
+      display: grid;
+      grid-template-columns: 3.5em minmax(0, 1fr);
+      width: 52%;
+      align-items: baseline;
     }
 
-    .editable:empty::before {
-      color: #9aa49f;
-      content: attr(data-placeholder);
+    .applicant-caption {
+      text-align: left;
     }
 
     .form-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
+      font-size: .92em;
     }
 
     .form-table th,
     .form-table td {
-      padding: 12px 10px;
-      border: 1px solid #5b625e;
-      vertical-align: top;
-      line-height: 1.7;
+      height: 7.4mm;
+      padding: 1.2% 1.5%;
+      border: 1px solid #333;
+      vertical-align: middle;
+      line-height: 1.4;
       overflow-wrap: anywhere;
     }
 
     .form-table th {
-      width: 28%;
-      background: #fafafa;
-      text-align: left;
-      font-weight: 500;
+      width: 21%;
+      background: #fff;
+      text-align: center;
+      font-weight: 400;
+      letter-spacing: .08em;
+    }
+
+    .form-table th.sub-label {
+      width: 12%;
     }
 
     .form-table td {
-      min-height: 50px;
+      width: auto;
+    }
+
+    .editable {
+      display: inline-block;
+      min-width: 22px;
+      min-height: 1.4em;
+      padding: 0 2px;
+      border-bottom: 1px solid transparent;
+      outline: none;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      letter-spacing: normal;
+    }
+
+    .editable:focus {
+      border-bottom-color: #176b53;
+      background: #f1f8f4;
+    }
+
+    .editable:empty::before {
+      color: #a4aaa6;
+      content: attr(data-placeholder);
+      letter-spacing: normal;
+    }
+
+    .permit-copy {
+      position: relative;
+      min-height: 28%;
+      padding: 2% 2% 0;
+      border: 1px solid #333;
+      border-top: 0;
+      font-size: .83em;
+    }
+
+    .permit-number {
+      margin: 0 0 1%;
+      letter-spacing: .65em;
+    }
+
+    .permit-title {
+      margin: 0 0 3%;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: 700;
+      letter-spacing: .5em;
+    }
+
+    .permit-copy > p {
+      margin-top: 2%;
+      margin-bottom: 2%;
+    }
+
+    .condition-row {
+      display: grid;
+      grid-template-columns: 14% 1fr;
+      min-height: 10mm;
+      width: 84%;
+      margin: 2% auto;
+      border: 1px solid #333;
+    }
+
+    .condition-label {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid #333;
+      letter-spacing: .4em;
+    }
+
+    .condition-value {
+      padding: 2%;
+    }
+
+    .permit-date {
+      margin: 2% 1% 0 !important;
+      text-align: right;
+      letter-spacing: .3em;
+    }
+
+    .permit-authority {
+      margin: 4% 1% 0 !important;
+      text-align: right;
+      letter-spacing: .55em;
+    }
+
+    .form-notes {
+      margin: 2% 0 0;
+      font-size: .58em;
+      line-height: 1.35;
+    }
+
+    .form-notes p {
+      margin: 0;
     }
 
     .paper-note {
-      margin: 18px 0 0;
+      margin: 4px 0 0;
       color: #626a65;
       font-family: "Yu Gothic UI", "Meiryo", sans-serif;
-      font-size: 10px;
-      line-height: 1.7;
+      font-size: .65em;
+      line-height: 1.5;
+    }
+
+    .paper-note a {
+      color: inherit;
     }
 
     footer {
@@ -405,13 +516,85 @@
       }
 
       .paper {
-        min-height: 680px;
-        padding: 30px 22px;
+        padding: 5.8% 5% 4%;
       }
 
       .form-table th,
       .form-table td {
-        padding: 9px 7px;
+        height: 6.8mm;
+      }
+
+      .applicant-row {
+        width: 66%;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      body {
+        min-width: 0;
+        background: #fff;
+      }
+
+      .topbar,
+      .intro,
+      .notice,
+      .editor,
+      .preview-heading,
+      footer {
+        display: none !important;
+      }
+
+      main {
+        width: 210mm;
+        margin: 0;
+        padding: 0;
+      }
+
+      .workspace {
+        display: block;
+      }
+
+      .preview-panel {
+        position: static;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .paper-wrap {
+        padding: 0;
+        overflow: visible;
+        background: #fff;
+      }
+
+      .paper {
+        width: 210mm;
+        height: 297mm;
+        min-height: 0;
+        margin: 0;
+        padding: 15mm 15mm 9mm;
+        border: 0;
+        box-shadow: none;
+        font-size: 9pt;
+      }
+
+      .editable {
+        border: 0;
+        background: transparent !important;
+        color: #111;
+      }
+
+      .editable:empty::before {
+        content: "";
+      }
+
+      .paper-note {
+        color: #222;
       }
     }
   </style>
@@ -434,7 +617,7 @@
 
     <aside class="notice" aria-label="ご利用前の確認">
       <span class="notice-icon" aria-hidden="true">!</span>
-      <span>この画面は初期版です。<a href="https://www.npa.go.jp/bureau/traffic/seibi2/shinsei-todokede/dourosiyoukyoka/permission.html" target="_blank" rel="noopener noreferrer">警察庁公開の「別記様式第六」</a>を参考にしていますが、書式の細かな配置や都道府県警察ごとの追加要件は確認中です。提出前に管轄警察署へ最新様式と必要書類をご確認ください。</span>
+      <span>このプレビューは入力確認用です。警視庁公開の「別記様式第六」（2026年1月9日更新）を参考に項目と配置を再構成していますが、公式原本そのものではありません。提出前に<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kotsu/application/shiyo_kyoka.html" target="_blank" rel="noopener noreferrer">警視庁の最新様式</a>と管轄警察署の案内をご確認ください。</span>
     </aside>
 
     <div class="workspace">
@@ -472,7 +655,7 @@
               <textarea data-input="purpose" placeholder="例：給排水管敷設工事"></textarea>
             </label>
             <label class="field">
-              <span class="field-label">場所または区間 <span class="required">必須</span></span>
+              <span class="field-label">場所又は区間 <span class="required">必須</span></span>
               <input type="text" data-input="location" autocomplete="street-address" placeholder="現場住所・道路名など" required>
             </label>
             <label class="field">
@@ -480,7 +663,7 @@
               <input type="text" data-input="period" placeholder="例：令和8年4月1日から令和8年4月3日まで">
             </label>
             <label class="field">
-              <span class="field-label">使用方法または形態</span>
+              <span class="field-label">方法又は形態</span>
               <textarea data-input="method" placeholder="作業内容、時間帯、交通誘導の方法など"></textarea>
             </label>
             <label class="field">
@@ -490,13 +673,13 @@
           </div>
 
           <div class="form-section">
-            <h3>現場責任者</h3>
+            <h3>現場住所・責任者</h3>
             <label class="field">
-              <span class="field-label">住所</span>
-              <input type="text" data-input="managerAddress" autocomplete="street-address" placeholder="現場責任者の住所">
+              <span class="field-label">現場住所</span>
+              <input type="text" data-input="managerAddress" autocomplete="street-address" placeholder="現場の住所">
             </label>
             <label class="field">
-              <span class="field-label">氏名</span>
+              <span class="field-label">責任者氏名</span>
               <input type="text" data-input="managerName" autocomplete="name" placeholder="現場責任者の氏名">
             </label>
             <label class="field">
@@ -519,51 +702,77 @@
         </div>
         <div class="paper-wrap">
           <article class="paper" aria-label="道路使用許可申請書プレビュー">
+            <p class="form-reference">別記様式第六（第十条関係）</p>
             <h2 class="paper-title">道路使用許可申請書</h2>
-            <p class="paper-date"><span class="editable" data-preview="applicationDate" data-placeholder="申請日" contenteditable="true" role="textbox" aria-label="申請日"></span></p>
-            <div class="police-line"><span class="editable" data-preview="policeStation" data-placeholder="提出先警察署長" contenteditable="true" role="textbox" aria-label="提出先の警察署名"></span> 殿</div>
+            <p class="paper-date"><span class="editable" data-preview="applicationDate" data-placeholder="年　　月　　日" contenteditable="true" role="textbox" aria-label="申請日"></span></p>
+            <div class="police-line"><span class="editable" data-preview="policeStation" data-placeholder="警察署長" contenteditable="true" role="textbox" aria-label="提出先の警察署名"></span> 殿</div>
+            <div class="applicant-block">
+              <div class="applicant-row"><span class="applicant-caption">住所</span><span class="editable" data-preview="applicantAddress" data-placeholder="" contenteditable="true" role="textbox" aria-label="申請者住所"></span></div>
+              <div class="applicant-row"><span class="applicant-caption">氏名</span><span class="editable" data-preview="applicantName" data-placeholder="" contenteditable="true" role="textbox" aria-label="申請者氏名"></span></div>
+              <span>申請者</span>
+            </div>
 
             <table class="form-table">
+              <colgroup>
+                <col style="width: 11%">
+                <col style="width: 11%">
+                <col style="width: 35%">
+                <col style="width: 20%">
+                <col style="width: 11%">
+                <col style="width: 12%">
+              </colgroup>
               <tbody>
                 <tr>
-                  <th scope="row">申請者住所</th>
-                  <td><span class="editable" data-preview="applicantAddress" data-placeholder="申請者住所" contenteditable="true" role="textbox" aria-label="申請者住所"></span></td>
+                  <th scope="row" colspan="2">道路使用の目的</th>
+                  <td colspan="4"><span class="editable" data-preview="purpose" data-placeholder="" contenteditable="true" role="textbox" aria-label="道路使用の目的"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">申請者氏名</th>
-                  <td><span class="editable" data-preview="applicantName" data-placeholder="申請者氏名" contenteditable="true" role="textbox" aria-label="申請者氏名"></span></td>
+                  <th scope="row" colspan="2">場所又は区間</th>
+                  <td colspan="4"><span class="editable" data-preview="location" data-placeholder="" contenteditable="true" role="textbox" aria-label="使用場所又は区間"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">道路使用の目的</th>
-                  <td><span class="editable" data-preview="purpose" data-placeholder="道路使用の目的" contenteditable="true" role="textbox" aria-label="道路使用の目的"></span></td>
+                  <th scope="row" colspan="2">期間</th>
+                  <td colspan="4"><span class="editable" data-preview="period" data-placeholder="年　　月　　日　時から　　年　　月　　日　時まで" contenteditable="true" role="textbox" aria-label="道路を使用する期間"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">場所または区間</th>
-                  <td><span class="editable" data-preview="location" data-placeholder="現場住所・道路名など" contenteditable="true" role="textbox" aria-label="使用場所または区間"></span></td>
+                  <th scope="row" colspan="2">方法又は形態</th>
+                  <td colspan="4"><span class="editable" data-preview="method" data-placeholder="" contenteditable="true" role="textbox" aria-label="方法又は形態"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">使用期間</th>
-                  <td><span class="editable" data-preview="period" data-placeholder="使用する期間" contenteditable="true" role="textbox" aria-label="道路を使用する期間"></span></td>
+                  <th scope="row" colspan="2">添付書類</th>
+                  <td colspan="4"><span class="editable" data-preview="attachments" data-placeholder="" contenteditable="true" role="textbox" aria-label="添付書類"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">使用方法または形態</th>
-                  <td><span class="editable" data-preview="method" data-placeholder="使用方法または形態" contenteditable="true" role="textbox" aria-label="使用方法または形態"></span></td>
+                  <th scope="row" colspan="2">現場住所</th>
+                  <td colspan="4"><span class="editable" data-preview="managerAddress" data-placeholder="" contenteditable="true" role="textbox" aria-label="現場住所"></span></td>
                 </tr>
                 <tr>
-                  <th scope="row">添付書類</th>
-                  <td><span class="editable" data-preview="attachments" data-placeholder="添付書類" contenteditable="true" role="textbox" aria-label="添付書類"></span></td>
-                </tr>
-                <tr>
-                  <th scope="row">現場責任者</th>
-                  <td>
-                    住所：<span class="editable" data-preview="managerAddress" data-placeholder="住所" contenteditable="true" role="textbox" aria-label="現場責任者の住所"></span><br>
-                    氏名：<span class="editable" data-preview="managerName" data-placeholder="氏名" contenteditable="true" role="textbox" aria-label="現場責任者の氏名"></span><br>
-                    電話：<span class="editable" data-preview="managerPhone" data-placeholder="電話番号" contenteditable="true" role="textbox" aria-label="現場責任者の電話番号"></span>
-                  </td>
+                  <th scope="row" class="sub-label">責任者</th>
+                  <th scope="row" class="sub-label">氏名</th>
+                  <td colspan="2"><span class="editable" data-preview="managerName" data-placeholder="" contenteditable="true" role="textbox" aria-label="責任者氏名"></span></td>
+                  <th scope="row" class="sub-label">電話</th>
+                  <td><span class="editable" data-preview="managerPhone" data-placeholder="" contenteditable="true" role="textbox" aria-label="責任者電話番号"></span></td>
                 </tr>
               </tbody>
             </table>
-            <p class="paper-note">※ このプレビューは入力確認用です。正式な提出様式・添付書類・提出部数は管轄警察署にご確認ください。</p>
+            <section class="permit-copy" aria-label="道路使用許可証部分">
+              <p class="permit-number">第　　号</p>
+              <h3 class="permit-title">道路使用許可証</h3>
+              <p>上記のとおり許可する。ただし、次の条件に従うこと。</p>
+              <div class="condition-row">
+                <span class="condition-label">条件</span>
+                <span class="editable condition-value" data-preview="conditions" data-placeholder="" contenteditable="true" role="textbox" aria-label="許可条件"></span>
+              </div>
+              <p class="permit-date">年　　月　　日</p>
+              <p class="permit-authority">警察署長　印</p>
+            </section>
+            <div class="form-notes" aria-label="様式の備考">
+              <p>備考　1　申請者が法人であるときは、申請者の欄には、その名称、主たる事務所の所在地及び代表者の氏名を記載すること。</p>
+              <p>　　　2　方法又は形態の欄には、工事又は作業の方法、使用面積、行事等の参加人員、通行の形態又は方法等について具体的に記載すること。</p>
+              <p>　　　3　添付書類の欄には、道路の場所、方法等を明らかにした図面その他必要な書類を添付した場合にその書類名を記載すること。</p>
+              <p>　　　4　用紙の大きさは、日本産業規格A列4番とする。</p>
+            </div>
+            <p class="paper-note">警視庁公開の様式（2026年1月9日更新）を参考に再構成した入力確認用プレビューです。公式原本：<a href="https://www.keishicho.metro.tokyo.lg.jp/tetsuzuki/kotsu/application/shiyo_kyoka.files/style03.pdf" target="_blank" rel="noopener noreferrer">申請様式（PDF）</a>。提出には最新の公式様式をご確認ください。</p>
           </article>
         </div>
       </section>
