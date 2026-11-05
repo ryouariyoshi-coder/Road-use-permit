@@ -759,6 +759,101 @@
       color: var(--green);
     }
 
+    .work-diagram-section {
+      margin-top: 28px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 8px 28px rgb(34 55 46 / 5%);
+    }
+
+    .work-diagram-controls {
+      display: grid;
+      gap: 12px;
+      padding: 18px 22px;
+    }
+
+    .diagram-toolbar,
+    .diagram-calibration,
+    .diagram-selection-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 8px;
+    }
+
+    .diagram-field {
+      display: grid;
+      min-width: 120px;
+      gap: 5px;
+      color: #44534e;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .diagram-field input {
+      min-height: 36px;
+      padding: 6px 8px;
+      border: 1px solid #d5ded9;
+      border-radius: 6px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .diagram-canvas-wrap {
+      max-height: 620px;
+      margin: 0 22px 18px;
+      overflow: auto;
+      border: 1px solid #cbd6d0;
+      border-radius: 8px;
+      background: #eef1ed;
+    }
+
+    .diagram-canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+
+    .diagram-canvas-wrap[data-mode="calibrate"] .diagram-canvas {
+      cursor: crosshair;
+    }
+
+    .diagram-canvas-wrap[data-mode="move"] .diagram-canvas {
+      cursor: grab;
+    }
+
+    .diagram-canvas-wrap[data-mode="move"] .diagram-canvas:active {
+      cursor: grabbing;
+    }
+
+    .diagram-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .diagram-status[data-state="error"] {
+      color: #a23c30;
+    }
+
+    .diagram-status[data-state="success"] {
+      color: var(--green);
+    }
+
+    .diagram-background-input {
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     footer {
       margin-top: 24px;
       color: var(--muted);
@@ -919,6 +1014,47 @@
 
       .paper-note {
         color: #222;
+      }
+
+      body.print-work-diagram .topbar,
+      body.print-work-diagram .intro,
+      body.print-work-diagram .notice,
+      body.print-work-diagram .editor,
+      body.print-work-diagram .preview-panel,
+      body.print-work-diagram .attachments-section:not(.work-diagram-section),
+      body.print-work-diagram footer {
+        display: none !important;
+      }
+
+      body.print-work-diagram .work-diagram-section {
+        display: block !important;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 10mm;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      body.print-work-diagram .work-diagram-controls {
+        display: none;
+      }
+
+      body.print-work-diagram .diagram-canvas-wrap {
+        max-height: none;
+        margin: 0;
+        overflow: visible;
+        border: 0;
+      }
+
+      body.print-work-diagram .diagram-canvas {
+        width: 180mm !important;
+        max-height: 250mm;
+      }
+
+      body.print-work-diagram .panel-heading {
+        padding: 0 0 8mm;
       }
     }
   </style>
@@ -1192,6 +1328,48 @@
       <p class="attachments-intro">画像は1枚あたり10MB・2,000万画素までです。現在はこのページ内での一時表示のみで、再読み込みやページを閉じると消去されます。</p>
     </section>
 
+    <section class="work-diagram-section attachments-section" aria-labelledby="work-diagram-title">
+      <div class="panel-heading">
+        <h2 id="work-diagram-title">作業体図</h2>
+        <span class="step">STEP 3 / 5</span>
+      </div>
+      <div class="work-diagram-controls">
+        <p class="map-service-note">背景画像を読み込み、実測で分かる2点間の距離を使って縮尺を合わせます。コーン・バリケード・作業車両を追加して配置できます。画像と作図内容は現在このページ内だけに保持されます。</p>
+        <div class="diagram-toolbar">
+          <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+          <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
+          <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
+          <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
+          <button class="attachment-button" type="button" data-add-diagram-item="vehicle">作業車両を追加</button>
+          <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
+        </div>
+        <div class="diagram-calibration">
+          <label class="diagram-field">実測した2点間の距離（mm）
+            <input type="number" data-diagram-calibration-distance min="1" step="1" placeholder="例：10000">
+          </label>
+          <button class="attachment-button" type="button" data-start-diagram-calibration>2点を選んで縮尺を設定</button>
+          <label class="diagram-field">表示倍率
+            <input type="range" data-diagram-zoom min="50" max="200" value="100" step="10">
+          </label>
+        </div>
+        <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
+          <label class="diagram-field">長さ（mm・100mm刻み）
+            <input type="number" data-diagram-item-length min="100" step="100">
+          </label>
+          <label class="diagram-field">幅（mm・100mm刻み）
+            <input type="number" data-diagram-item-width min="100" step="100">
+          </label>
+          <button class="attachment-button" type="button" data-rotate-diagram-item="-15">左へ15°</button>
+          <button class="attachment-button" type="button" data-rotate-diagram-item="15">右へ15°</button>
+          <button class="attachment-button" type="button" data-delete-diagram-item>選択アイテムを削除</button>
+        </div>
+        <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。縮尺を設定するまでは、作図アイテムの寸法は画面上の目安です。</p>
+      </div>
+      <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
+        <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
+      </div>
+    </section>
+
     <footer>申請書の最新様式・提出条件は、提出先の警察署でご確認ください。</footer>
   </main>
 
@@ -1229,12 +1407,37 @@
         captureButton: document.querySelector("[data-capture-map]"),
         cancelButton: document.querySelector("[data-cancel-map-selection]")
       };
+      const diagramControls = {
+        backgroundInput: document.querySelector("[data-diagram-background-input]"),
+        canvas: document.querySelector("[data-work-diagram-canvas]"),
+        wrap: document.querySelector("[data-diagram-canvas-wrap]"),
+        status: document.querySelector("[data-diagram-status]"),
+        calibrationDistance: document.querySelector("[data-diagram-calibration-distance]"),
+        calibrationButton: document.querySelector("[data-start-diagram-calibration]"),
+        zoom: document.querySelector("[data-diagram-zoom]"),
+        selectionControls: document.querySelector("[data-diagram-selection-controls]"),
+        itemLength: document.querySelector("[data-diagram-item-length]"),
+        itemWidth: document.querySelector("[data-diagram-item-width]"),
+        deleteButton: document.querySelector("[data-delete-diagram-item]"),
+        printButton: document.querySelector("[data-print-work-diagram]")
+      };
       const mapSlot = imageSlots.find((slot) => slot.image.alt === "取り込んだ現場位置図");
       let mapInstance = null;
       let mapLoaded = false;
       let selectingMapArea = false;
       let selectionStart = null;
       let selectionBounds = null;
+      const diagramState = {
+        background: null,
+        backgroundUrl: null,
+        items: [],
+        selectedId: null,
+        calibrationMode: false,
+        calibrationPoints: [],
+        pixelsPerMm: null,
+        dragItem: null,
+        nextItemId: 1
+      };
 
       function updatePreviews(name, value) {
         previews
@@ -1659,6 +1862,387 @@
           setMapStatus("範囲の選択が中断されました。もう一度選択してください。", "error");
         }
       });
+
+      const diagramContext = diagramControls.canvas.getContext("2d");
+      if (!diagramContext) {
+        setDiagramStatus("作業体図を表示できません。ブラウザーを確認してください。", "error");
+      }
+
+      function setDiagramStatus(message, state) {
+        diagramControls.status.textContent = message;
+        if (state) {
+          diagramControls.status.dataset.state = state;
+        } else {
+          delete diagramControls.status.dataset.state;
+        }
+      }
+
+      function getDiagramScale() {
+        return diagramState.pixelsPerMm || 0.06;
+      }
+
+      function getDiagramItemDimensions(item) {
+        const scale = getDiagramScale();
+        return {
+          length: item.lengthMm * scale,
+          width: item.widthMm * scale
+        };
+      }
+
+      function drawDiagramArrow(context, x, y, direction) {
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + direction * 10, y - 5);
+        context.lineTo(x + direction * 10, y + 5);
+        context.closePath();
+        context.fill();
+      }
+
+      function drawDiagramItem(item) {
+        const dimensions = getDiagramItemDimensions(item);
+        const halfLength = dimensions.length / 2;
+        const halfWidth = dimensions.width / 2;
+        const context = diagramContext;
+        context.save();
+        context.translate(item.x, item.y);
+        context.rotate(item.rotation * Math.PI / 180);
+
+        if (item.type === "cone") {
+          context.fillStyle = "#e66b25";
+          context.strokeStyle = "#7a3514";
+          context.lineWidth = Math.max(2, dimensions.width * 0.04);
+          context.beginPath();
+          context.moveTo(-halfLength * 0.36, halfWidth);
+          context.lineTo(-halfLength * 0.18, -halfWidth);
+          context.lineTo(halfLength * 0.18, -halfWidth);
+          context.lineTo(halfLength * 0.36, halfWidth);
+          context.closePath();
+          context.fill();
+          context.stroke();
+          context.fillStyle = "#fff";
+          context.fillRect(-halfLength * 0.22, -halfWidth * 0.25, halfLength * 0.44, Math.max(4, halfWidth * 0.18));
+        } else if (item.type === "barrier") {
+          context.fillStyle = "#f4d447";
+          context.strokeStyle = "#363636";
+          context.lineWidth = Math.max(2, dimensions.width * 0.035);
+          context.fillRect(-halfLength, -halfWidth * 0.28, dimensions.length, halfWidth * 0.56);
+          context.strokeRect(-halfLength, -halfWidth * 0.28, dimensions.length, halfWidth * 0.56);
+          context.strokeStyle = "#353535";
+          context.lineWidth = Math.max(3, halfWidth * 0.12);
+          context.beginPath();
+          context.moveTo(-halfLength * 0.75, halfWidth * 0.28);
+          context.lineTo(-halfLength * 0.85, halfWidth);
+          context.moveTo(halfLength * 0.75, halfWidth * 0.28);
+          context.lineTo(halfLength * 0.85, halfWidth);
+          context.stroke();
+        } else {
+          context.fillStyle = "#3e718c";
+          context.strokeStyle = "#183c4d";
+          context.lineWidth = Math.max(2, dimensions.width * 0.035);
+          context.beginPath();
+          context.roundRect(-halfLength, -halfWidth, dimensions.length, dimensions.width, Math.max(5, halfWidth * 0.12));
+          context.fill();
+          context.stroke();
+          context.fillStyle = "#c8e3ed";
+          context.fillRect(-halfLength * 0.48, -halfWidth * 0.72, halfLength * 0.42, halfWidth * 1.44);
+          context.fillRect(halfLength * 0.06, -halfWidth * 0.72, halfLength * 0.34, halfWidth * 1.44);
+        }
+
+        context.fillStyle = "#14251f";
+        context.strokeStyle = "#fff";
+        context.lineWidth = Math.max(1, 10 * getDiagramScale());
+        const dimensionY = -halfWidth - 180 * getDiagramScale();
+        context.beginPath();
+        context.moveTo(-halfLength, dimensionY);
+        context.lineTo(halfLength, dimensionY);
+        context.stroke();
+        context.fillStyle = "#14251f";
+        drawDiagramArrow(context, -halfLength, dimensionY, 1);
+        drawDiagramArrow(context, halfLength, dimensionY, -1);
+        context.font = `${Math.max(14, 180 * getDiagramScale())}px sans-serif`;
+        context.textAlign = "center";
+        context.textBaseline = "bottom";
+        context.fillText(`${item.lengthMm} mm`, 0, dimensionY - 5);
+
+        if (item.id === diagramState.selectedId && !document.body.classList.contains("print-work-diagram")) {
+          context.strokeStyle = "#176b53";
+          context.lineWidth = 3;
+          context.setLineDash([8, 5]);
+          context.strokeRect(-halfLength - 8, -halfWidth - 8, dimensions.length + 16, dimensions.width + 16);
+        }
+        context.restore();
+      }
+
+      function drawWorkDiagram() {
+        if (!diagramContext) {
+          return;
+        }
+        const canvas = diagramControls.canvas;
+        diagramContext.clearRect(0, 0, canvas.width, canvas.height);
+        diagramContext.fillStyle = "#fff";
+        diagramContext.fillRect(0, 0, canvas.width, canvas.height);
+        if (diagramState.background) {
+          diagramContext.drawImage(diagramState.background, 0, 0, canvas.width, canvas.height);
+        } else {
+          diagramContext.fillStyle = "#788780";
+          diagramContext.font = "24px sans-serif";
+          diagramContext.textAlign = "center";
+          diagramContext.fillText("背景画像を選択してください", canvas.width / 2, canvas.height / 2);
+        }
+
+        diagramState.items.forEach(drawDiagramItem);
+        if (!document.body.classList.contains("print-work-diagram")) {
+          diagramState.calibrationPoints.forEach((point, index) => {
+            diagramContext.beginPath();
+            diagramContext.fillStyle = "#176b53";
+            diagramContext.arc(point.x, point.y, 12, 0, Math.PI * 2);
+            diagramContext.fill();
+            diagramContext.fillStyle = "#fff";
+            diagramContext.font = "bold 14px sans-serif";
+            diagramContext.textAlign = "center";
+            diagramContext.textBaseline = "middle";
+            diagramContext.fillText(String(index + 1), point.x, point.y);
+          });
+        }
+      }
+
+      function setSelectedDiagramItem(item) {
+        diagramState.selectedId = item ? item.id : null;
+        diagramControls.selectionControls.hidden = !item;
+        diagramControls.deleteButton.disabled = !item;
+        if (item) {
+          diagramControls.itemLength.value = String(item.lengthMm);
+          diagramControls.itemWidth.value = String(item.widthMm);
+          setDiagramStatus(`${item.label}を選択中です。ドラッグで移動し、長さ・幅・向きを調整できます。`, "success");
+        }
+        drawWorkDiagram();
+      }
+
+      function getDiagramPoint(event) {
+        const rect = diagramControls.canvas.getBoundingClientRect();
+        return {
+          x: (event.clientX - rect.left) * diagramControls.canvas.width / rect.width,
+          y: (event.clientY - rect.top) * diagramControls.canvas.height / rect.height
+        };
+      }
+
+      function findDiagramItemAt(point) {
+        for (let index = diagramState.items.length - 1; index >= 0; index -= 1) {
+          const item = diagramState.items[index];
+          const dx = point.x - item.x;
+          const dy = point.y - item.y;
+          const angle = -item.rotation * Math.PI / 180;
+          const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+          const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+          const dimensions = getDiagramItemDimensions(item);
+          if (Math.abs(localX) <= dimensions.length / 2 + 20 && Math.abs(localY) <= dimensions.width / 2 + 30) {
+            return item;
+          }
+        }
+        return null;
+      }
+
+      function loadDiagramBackground(file) {
+        if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+          setDiagramStatus("背景はJPEG、PNG、WebP、GIF形式を選択してください。", "error");
+          return;
+        }
+        if (file.size > maxImageBytes) {
+          setDiagramStatus("背景画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。", "error");
+          return;
+        }
+
+        const nextUrl = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => {
+          if (image.naturalWidth * image.naturalHeight > maxImagePixels) {
+            URL.revokeObjectURL(nextUrl);
+            setDiagramStatus("背景画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。", "error");
+            return;
+          }
+          if (diagramState.backgroundUrl) {
+            URL.revokeObjectURL(diagramState.backgroundUrl);
+          }
+          diagramState.background = image;
+          diagramState.backgroundUrl = nextUrl;
+          const canvasSize = 1200 / Math.max(image.naturalWidth, image.naturalHeight);
+          diagramControls.canvas.width = Math.max(1, Math.round(image.naturalWidth * canvasSize));
+          diagramControls.canvas.height = Math.max(1, Math.round(image.naturalHeight * canvasSize));
+          diagramState.calibrationPoints = [];
+          diagramState.pixelsPerMm = null;
+          drawWorkDiagram();
+          setDiagramStatus(`背景「${file.name}」を読み込みました。実測した2点間の距離で縮尺を設定してください。`, "success");
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(nextUrl);
+          setDiagramStatus("背景画像を読み込めませんでした。別の画像を選んでください。", "error");
+        };
+        image.src = nextUrl;
+      }
+
+      function addDiagramItem(type) {
+        const definitions = {
+          cone: { label: "カラーコーン", lengthMm: 600, widthMm: 600 },
+          barrier: { label: "バリケード", lengthMm: 2000, widthMm: 1000 },
+          vehicle: { label: "作業車両", lengthMm: 4500, widthMm: 1800 }
+        };
+        const definition = definitions[type];
+        if (!definition) {
+          return;
+        }
+        if (!diagramState.background) {
+          setDiagramStatus("先に背景画像を選択してください。", "error");
+          return;
+        }
+        const item = {
+          id: diagramState.nextItemId,
+          type,
+          label: definition.label,
+          x: diagramControls.canvas.width / 2 + (diagramState.items.length % 5) * 24,
+          y: diagramControls.canvas.height / 2 + (diagramState.items.length % 5) * 24,
+          lengthMm: definition.lengthMm,
+          widthMm: definition.widthMm,
+          rotation: 0
+        };
+        diagramState.nextItemId += 1;
+        diagramState.items.push(item);
+        diagramState.calibrationMode = false;
+        diagramControls.wrap.dataset.mode = "move";
+        setSelectedDiagramItem(item);
+      }
+
+      function updateSelectedDiagramDimension(input, property) {
+        const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
+        if (!item) {
+          return;
+        }
+        const value = Number(input.value);
+        if (!Number.isFinite(value) || value < 100) {
+          setDiagramStatus("長さと幅は100mm以上で入力してください。", "error");
+          return;
+        }
+        const rounded = Math.round(value / 100) * 100;
+        item[property] = rounded;
+        input.value = String(rounded);
+        drawWorkDiagram();
+        setDiagramStatus(`${item.label}の${property === "lengthMm" ? "長さ" : "幅"}を${rounded}mmにしました。`, "success");
+      }
+
+      diagramControls.backgroundInput.addEventListener("change", () => {
+        const file = diagramControls.backgroundInput.files && diagramControls.backgroundInput.files[0];
+        diagramControls.backgroundInput.value = "";
+        if (file) {
+          loadDiagramBackground(file);
+        }
+      });
+      document.querySelectorAll("[data-add-diagram-item]").forEach((button) => {
+        button.addEventListener("click", () => addDiagramItem(button.dataset.addDiagramItem));
+      });
+      diagramControls.calibrationButton.addEventListener("click", () => {
+        if (!diagramState.background) {
+          setDiagramStatus("先に背景画像を選択してください。", "error");
+          return;
+        }
+        diagramState.calibrationMode = true;
+        diagramState.calibrationPoints = [];
+        diagramControls.wrap.dataset.mode = "calibrate";
+        drawWorkDiagram();
+        setDiagramStatus("背景上で、実測距離が分かっている2点を順番にクリックしてください。");
+      });
+      diagramControls.canvas.addEventListener("pointerdown", (event) => {
+        const point = getDiagramPoint(event);
+        if (diagramState.calibrationMode) {
+          diagramState.calibrationPoints.push(point);
+          if (diagramState.calibrationPoints.length === 1) {
+            setDiagramStatus("1点目を記録しました。実測区間の2点目をクリックしてください。");
+          } else {
+            const distanceMm = Number(diagramControls.calibrationDistance.value);
+            const [first, second] = diagramState.calibrationPoints;
+            const distancePx = Math.hypot(second.x - first.x, second.y - first.y);
+            if (!Number.isFinite(distanceMm) || distanceMm <= 0 || distancePx <= 0) {
+              diagramState.calibrationPoints = [first];
+              setDiagramStatus("2点間の実測距離（mm）を正しく入力し、離れた2点を選んでください。", "error");
+              return;
+            }
+            diagramState.pixelsPerMm = distancePx / distanceMm;
+            diagramState.calibrationMode = false;
+            diagramControls.wrap.dataset.mode = "move";
+            setDiagramStatus(`縮尺を設定しました。背景上 ${Math.round(distancePx)} px が実測 ${distanceMm} mm に相当します。`, "success");
+          }
+          drawWorkDiagram();
+          return;
+        }
+
+        const item = findDiagramItemAt(point);
+        setSelectedDiagramItem(item);
+        if (item) {
+          diagramState.dragItem = {
+            id: item.id,
+            offsetX: item.x - point.x,
+            offsetY: item.y - point.y
+          };
+          diagramControls.canvas.setPointerCapture(event.pointerId);
+        }
+      });
+      diagramControls.canvas.addEventListener("pointermove", (event) => {
+        if (!diagramState.dragItem) {
+          return;
+        }
+        const item = diagramState.items.find((candidate) => candidate.id === diagramState.dragItem.id);
+        if (!item) {
+          return;
+        }
+        const point = getDiagramPoint(event);
+        item.x = point.x + diagramState.dragItem.offsetX;
+        item.y = point.y + diagramState.dragItem.offsetY;
+        drawWorkDiagram();
+      });
+      diagramControls.canvas.addEventListener("pointerup", () => {
+        diagramState.dragItem = null;
+      });
+      diagramControls.canvas.addEventListener("pointercancel", () => {
+        diagramState.dragItem = null;
+      });
+      diagramControls.itemLength.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemLength, "lengthMm"));
+      diagramControls.itemWidth.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemWidth, "widthMm"));
+      document.querySelectorAll("[data-rotate-diagram-item]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
+          if (item) {
+            item.rotation = (item.rotation + Number(button.dataset.rotateDiagramItem) + 360) % 360;
+            drawWorkDiagram();
+            setDiagramStatus(`${item.label}の向きを${item.rotation}°にしました。`, "success");
+          }
+        });
+      });
+      diagramControls.deleteButton.addEventListener("click", () => {
+        const index = diagramState.items.findIndex((item) => item.id === diagramState.selectedId);
+        if (index >= 0) {
+          const [removed] = diagramState.items.splice(index, 1);
+          setSelectedDiagramItem(null);
+          setDiagramStatus(`${removed.label}を削除しました。`);
+        }
+      });
+      diagramControls.zoom.addEventListener("input", () => {
+        diagramControls.canvas.style.width = `${diagramControls.zoom.value}%`;
+      });
+      diagramControls.printButton.addEventListener("click", () => {
+        if (!diagramState.background) {
+          setDiagramStatus("印刷する前に背景画像を選択してください。", "error");
+          return;
+        }
+        document.body.classList.add("print-work-diagram");
+        drawWorkDiagram();
+        window.print();
+      });
+      window.addEventListener("afterprint", () => {
+        document.body.classList.remove("print-work-diagram");
+        drawWorkDiagram();
+      });
+      diagramControls.deleteButton.disabled = true;
+      diagramControls.canvas.width = 1200;
+      diagramControls.canvas.height = 800;
+      drawWorkDiagram();
 
       inputs.forEach((input, name) => {
         input.addEventListener("input", () => {
