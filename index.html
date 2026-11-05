@@ -1120,7 +1120,7 @@
             <a class="map-link map-link-secondary" data-osm-search aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">OpenStreetMapで場所を探す</a>
           </div>
           <div class="map-tools">
-            <p class="map-service-note">地図の中心座標を入力してください。住所から地図を探すリンクは、クリック時に住所を外部サイトへ送信します。地図画像はOpenFreeMapへ必要な地図タイルだけを問い合わせて表示します。</p>
+            <p class="map-service-note">「場所又は区間」に入力した住所を検索ボタンを押したときにPhoton（Komoot）へ送信し、取得した緯度・経度を入力欄に反映して地図を表示します。住所検索が見つからない場合は、緯度・経度を手入力できます。地図表示ではOpenFreeMapへ必要な地図タイルを問い合わせます。</p>
             <div class="map-coordinate-fields">
               <label>中心の緯度
                 <input type="number" data-map-latitude min="-85" max="85" step="0.000001" placeholder="例：35.681236" inputmode="decimal">
@@ -1132,8 +1132,9 @@
                 <input type="number" data-map-zoom min="14" max="19" step="1" value="17" inputmode="numeric">
               </label>
             </div>
-            <p class="map-instructions">OpenStreetMapで場所を開き、URLの「#map=ズーム/緯度/経度」から中心座標を入力します。地図上でもドラッグ・ホイールで位置と拡大率を調整できます。</p>
+            <p class="map-instructions">住所から自動取得できない場合は、OpenStreetMapのURLにある「#map=ズーム/緯度/経度」から中心座標を手入力できます。地図上でもドラッグ・ホイールで位置と拡大率を調整できます。</p>
             <div class="map-tool-buttons">
+              <button class="attachment-button" type="button" data-geocode-map-address>住所から緯度・経度を取得して地図を表示</button>
               <button class="attachment-button" type="button" data-load-map>地図を表示</button>
               <button class="attachment-button" type="button" data-start-map-selection disabled>範囲を選択</button>
               <button class="attachment-button" type="button" data-capture-map hidden disabled>選んだ範囲を位置図に取り込む</button>
@@ -1222,6 +1223,7 @@
         container: document.querySelector("[data-osm-map]"),
         selection: document.querySelector("[data-map-selection]"),
         status: document.querySelector("[data-map-status]"),
+        geocodeButton: document.querySelector("[data-geocode-map-address]"),
         loadButton: document.querySelector("[data-load-map]"),
         startButton: document.querySelector("[data-start-map-selection]"),
         captureButton: document.querySelector("[data-capture-map]"),
@@ -1424,7 +1426,7 @@
         mapControls.captureButton.disabled = true;
       }
 
-      function loadOpenMap() {
+      function loadOpenMap(successMessage) {
         const latitude = Number(mapControls.latitude.value);
         const longitude = Number(mapControls.longitude.value);
         const zoom = Number(mapControls.zoom.value);
@@ -1451,7 +1453,8 @@
         if (mapInstance) {
           mapInstance.resize();
           mapInstance.jumpTo({ center: [longitude, latitude], zoom });
-          setMapStatus("地図を移動しています…");
+          mapControls.startButton.disabled = !mapLoaded;
+          setMapStatus(successMessage || "地図を移動しました。地図をドラッグ・ホイールで調整してから範囲を選択してください。", "success");
           return;
         }
 
@@ -1472,7 +1475,7 @@
             mapLoaded = true;
             mapControls.startButton.disabled = false;
             mapInstance.resize();
-            setMapStatus("地図を表示しました。地図をドラッグ・ホイールで調整してから範囲を選択してください。", "success");
+            setMapStatus(successMessage || "地図を表示しました。地図をドラッグ・ホイールで調整してから範囲を選択してください。", "success");
           });
           mapInstance.on("error", (event) => {
             if (!mapLoaded && event.error) {
@@ -1482,6 +1485,62 @@
         } catch (error) {
           mapInstance = null;
           setMapStatus("地図を開始できませんでした。座標とインターネット接続を確認してください。", "error");
+        }
+      }
+
+      async function geocodeAddressAndShowMap() {
+        const address = locationInput.value.trim();
+        if (!address) {
+          setMapStatus("先に申請情報の「場所又は区間」に現場住所を入力してください。", "error");
+          return;
+        }
+
+        mapControls.geocodeButton.disabled = true;
+        setMapStatus("現場住所から緯度・経度を検索しています…");
+        const searchUrl = new URL("https://photon.komoot.io/api/");
+        searchUrl.searchParams.set("q", address);
+        searchUrl.searchParams.set("limit", "5");
+
+        try {
+          const response = await fetch(searchUrl, { headers: { Accept: "application/json" } });
+          if (!response.ok) {
+            setMapStatus("住所検索サービスから応答がありません。時間をおいて再試行するか、緯度・経度を手入力してください。", "error");
+            return;
+          }
+
+          const results = await response.json();
+          if (locationInput.value.trim() !== address) {
+            setMapStatus("検索中に現場住所が変更されました。もう一度検索してください。", "error");
+            return;
+          }
+
+          const features = results && Array.isArray(results.features) ? results.features : [];
+          const place = features.find((feature) => {
+            const geometry = feature && feature.geometry;
+            const coordinates = geometry && geometry.coordinates;
+            return geometry?.type === "Point" && Array.isArray(coordinates)
+              && Number.isFinite(coordinates[0]) && coordinates[0] >= -180 && coordinates[0] <= 180
+              && Number.isFinite(coordinates[1]) && coordinates[1] >= -85 && coordinates[1] <= 85;
+          });
+          if (!place) {
+            setMapStatus("住所に一致する場所が見つかりませんでした。住所を確認するか、緯度・経度を手入力してください。", "error");
+            return;
+          }
+
+          const [longitude, latitude] = place.geometry.coordinates;
+          mapControls.latitude.value = latitude.toFixed(6);
+          mapControls.longitude.value = longitude.toFixed(6);
+          const properties = place.properties || {};
+          const placeLabel = [properties.name, properties.city, properties.state, properties.country]
+            .filter(Boolean)
+            .filter((value, index, values) => values.indexOf(value) === index)
+            .join("、");
+          const resultDescription = placeLabel ? `（検索結果：${placeLabel}）` : "";
+          loadOpenMap(`住所から座標を取得しました${resultDescription}。緯度 ${latitude.toFixed(6)}、経度 ${longitude.toFixed(6)}。地図上で場所を確認してください。`);
+        } catch (error) {
+          setMapStatus("住所を検索できませんでした。インターネット接続を確認して、もう一度お試しください。", "error");
+        } finally {
+          mapControls.geocodeButton.disabled = false;
         }
       }
 
@@ -1533,7 +1592,8 @@
         }
       }
 
-      mapControls.loadButton.addEventListener("click", loadOpenMap);
+      mapControls.geocodeButton.addEventListener("click", geocodeAddressAndShowMap);
+      mapControls.loadButton.addEventListener("click", () => loadOpenMap());
       mapControls.startButton.addEventListener("click", () => {
         selectionBounds = null;
         selectionStart = null;
