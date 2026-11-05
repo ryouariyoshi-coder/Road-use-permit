@@ -588,21 +588,17 @@
       background: #fff;
     }
 
-    .map-coordinate-fields {
+    .map-zoom-field {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .map-coordinate-fields label {
-      display: grid;
+      max-width: 180px;
       gap: 5px;
       color: #44534e;
       font-size: 10px;
       font-weight: 700;
     }
 
-    .map-coordinate-fields input {
+    .map-zoom-field input,
+    .map-result-select {
       width: 100%;
       min-width: 0;
       min-height: 36px;
@@ -612,6 +608,10 @@
       color: var(--ink);
       font: inherit;
       font-size: 12px;
+    }
+
+    .map-result-select {
+      margin-top: 8px;
     }
 
     .map-tool-buttons {
@@ -820,14 +820,6 @@
       .attachments-grid {
         grid-template-columns: 1fr;
         padding: 14px;
-      }
-
-      .map-coordinate-fields {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .map-coordinate-fields label:last-child {
-        grid-column: 1 / -1;
       }
 
       .maplibre-map {
@@ -1110,7 +1102,7 @@
         <h2 id="attachments-title">現場地図・写真台帳</h2>
         <span class="step">STEP 2 / 5</span>
       </div>
-      <p class="attachments-intro">住所から地図を別画面で開き、利用条件を確認した画像、またはご自身が利用できる画像を選んでください。このツールは外部サービスから画像を自動取得しません。</p>
+      <p class="attachments-intro">住所から地図を検索するか、利用条件を確認した画像またはご自身が利用できる画像を選んでください。このツールは外部サービスから画像を自動取得しません。</p>
       <div class="attachments-grid">
         <article class="attachment-card" data-image-slot="map">
           <h3>現場位置図</h3>
@@ -1120,25 +1112,18 @@
             <a class="map-link map-link-secondary" data-osm-search aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">OpenStreetMapで場所を探す</a>
           </div>
           <div class="map-tools">
-            <p class="map-service-note">地図の中心座標を入力してください。住所から地図を探すリンクは、クリック時に住所を外部サイトへ送信します。地図画像はOpenFreeMapへ必要な地図タイルだけを問い合わせて表示します。</p>
-            <div class="map-coordinate-fields">
-              <label>中心の緯度
-                <input type="number" data-map-latitude min="-85" max="85" step="0.000001" placeholder="例：35.681236" inputmode="decimal">
-              </label>
-              <label>中心の経度
-                <input type="number" data-map-longitude min="-180" max="180" step="0.000001" placeholder="例：139.767125" inputmode="decimal">
-              </label>
-              <label>縮尺（拡大率）
-                <input type="number" data-map-zoom min="14" max="19" step="1" value="17" inputmode="numeric">
-              </label>
-            </div>
-            <p class="map-instructions">OpenStreetMapで場所を開き、URLの「#map=ズーム/緯度/経度」から中心座標を入力します。地図上でもドラッグ・ホイールで位置と拡大率を調整できます。</p>
+            <p class="map-service-note">申請情報に入力した現場住所をPhoton（Komoot）の住所検索サービスへ送信して、地図の場所を探します。住所検索ボタンを押したときだけ送信されます。地図表示にはOpenFreeMapへ地図タイルを問い合わせます。</p>
+            <label class="map-zoom-field">縮尺（拡大率）
+              <input type="number" data-map-zoom min="14" max="19" step="1" value="17" inputmode="numeric">
+            </label>
             <div class="map-tool-buttons">
-              <button class="attachment-button" type="button" data-load-map>地図を表示</button>
+              <button class="attachment-button" type="button" data-search-map-address>現場住所から地図を検索</button>
+              <button class="attachment-button" type="button" data-show-address-map hidden disabled>選択した場所の地図を表示</button>
               <button class="attachment-button" type="button" data-start-map-selection disabled>範囲を選択</button>
               <button class="attachment-button" type="button" data-capture-map hidden disabled>選んだ範囲を位置図に取り込む</button>
               <button class="attachment-button" type="button" data-cancel-map-selection hidden>選択をやめる</button>
             </div>
+            <select class="map-result-select" data-map-address-results aria-label="住所検索結果" hidden disabled></select>
             <p class="map-instructions" data-map-status role="status" aria-live="polite">地図の表示にはインターネット接続が必要です。</p>
             <p class="map-service-note">切り取った地図画像には「OpenFreeMap」「OpenMapTiles」「OpenStreetMap」の出典を付けます。OpenFreeMap公開サービスは稼働保証がないため、利用できない場合は別の画像を選んでください。</p>
           </div>
@@ -1215,14 +1200,14 @@
         requestId: 0
       }));
       const mapControls = {
-        latitude: document.querySelector("[data-map-latitude]"),
-        longitude: document.querySelector("[data-map-longitude]"),
         zoom: document.querySelector("[data-map-zoom]"),
         frame: document.querySelector("[data-map-frame]"),
         container: document.querySelector("[data-osm-map]"),
         selection: document.querySelector("[data-map-selection]"),
         status: document.querySelector("[data-map-status]"),
-        loadButton: document.querySelector("[data-load-map]"),
+        searchButton: document.querySelector("[data-search-map-address]"),
+        resultSelect: document.querySelector("[data-map-address-results]"),
+        showAddressButton: document.querySelector("[data-show-address-map]"),
         startButton: document.querySelector("[data-start-map-selection]"),
         captureButton: document.querySelector("[data-capture-map]"),
         cancelButton: document.querySelector("[data-cancel-map-selection]")
@@ -1233,6 +1218,7 @@
       let selectingMapArea = false;
       let selectionStart = null;
       let selectionBounds = null;
+      let geocodedPlaces = [];
 
       function updatePreviews(name, value) {
         previews
@@ -1424,14 +1410,96 @@
         mapControls.captureButton.disabled = true;
       }
 
-      function loadOpenMap() {
-        const latitude = Number(mapControls.latitude.value);
-        const longitude = Number(mapControls.longitude.value);
+      function getPlaceLabel(properties) {
+        const streetAddress = [properties.housenumber, properties.street].filter(Boolean).join(" ");
+        const parts = [
+          properties.name,
+          streetAddress,
+          properties.locality,
+          properties.district,
+          properties.city,
+          properties.state,
+          properties.country
+        ].filter(Boolean);
+        return [...new Set(parts)].join("、");
+      }
+
+      async function searchMapAddress() {
+        const address = locationInput.value.trim();
+        if (!address) {
+          setMapStatus("先に申請情報の「場所又は区間」に現場住所を入力してください。", "error");
+          return;
+        }
+
+        mapControls.searchButton.disabled = true;
+        mapControls.resultSelect.replaceChildren();
+        mapControls.resultSelect.hidden = true;
+        mapControls.resultSelect.disabled = true;
+        mapControls.showAddressButton.hidden = true;
+        mapControls.showAddressButton.disabled = true;
+        geocodedPlaces = [];
+        setMapStatus("住所から場所を検索しています…");
+
+        const searchUrl = new URL("https://photon.komoot.io/api/");
+        searchUrl.searchParams.set("q", address);
+        searchUrl.searchParams.set("limit", "5");
+
+        try {
+          const response = await fetch(searchUrl, { headers: { Accept: "application/json" } });
+          if (!response.ok) {
+            setMapStatus("住所検索サービスから応答がありません。時間をおいて再試行してください。", "error");
+            return;
+          }
+
+          const results = await response.json();
+          if (locationInput.value.trim() !== address) {
+            setMapStatus("検索中に現場住所が変更されました。もう一度検索してください。", "error");
+            return;
+          }
+
+          const features = results && Array.isArray(results.features) ? results.features : [];
+          geocodedPlaces = features.filter((feature) => {
+            const geometry = feature && feature.geometry;
+            const coordinates = geometry && geometry.coordinates;
+            return geometry?.type === "Point" && Array.isArray(coordinates)
+              && Number.isFinite(coordinates[0]) && coordinates[0] >= -180 && coordinates[0] <= 180
+              && Number.isFinite(coordinates[1]) && coordinates[1] >= -85 && coordinates[1] <= 85;
+          });
+
+          if (!geocodedPlaces.length) {
+            setMapStatus("住所に一致する場所が見つかりませんでした。住所を確認してください。", "error");
+            return;
+          }
+
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "地図に表示する場所を選択してください";
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          mapControls.resultSelect.append(placeholder);
+
+          geocodedPlaces.forEach((place, index) => {
+            const option = document.createElement("option");
+            option.value = String(index);
+            option.textContent = getPlaceLabel(place.properties || {}) || `検索候補 ${index + 1}`;
+            mapControls.resultSelect.append(option);
+          });
+          mapControls.resultSelect.hidden = false;
+          mapControls.resultSelect.disabled = false;
+          mapControls.showAddressButton.hidden = false;
+          setMapStatus("検索結果から現場の場所を選んでください。");
+        } catch (error) {
+          setMapStatus("住所を検索できませんでした。インターネット接続を確認して、もう一度お試しください。", "error");
+        } finally {
+          mapControls.searchButton.disabled = false;
+        }
+      }
+
+      function loadOpenMap(coordinates) {
+        const [longitude, latitude] = coordinates;
         const zoom = Number(mapControls.zoom.value);
-        if (mapControls.latitude.value === "" || !Number.isFinite(latitude) || latitude < -85 || latitude > 85
-          || mapControls.longitude.value === "" || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
-          || !Number.isInteger(zoom) || zoom < 14 || zoom > 19) {
-          setMapStatus("緯度は -85〜85、経度は -180〜180、縮尺は14〜19の整数で入力してください。", "error");
+        if (!Number.isInteger(zoom) || zoom < 14 || zoom > 19) {
+          setMapStatus("縮尺は14〜19の整数で入力してください。", "error");
           return;
         }
 
@@ -1451,7 +1519,7 @@
         if (mapInstance) {
           mapInstance.resize();
           mapInstance.jumpTo({ center: [longitude, latitude], zoom });
-          setMapStatus("地図を移動しています…");
+          setMapStatus("選択した場所に地図を移動しました。地図をドラッグ・ホイールで調整できます。", "success");
           return;
         }
 
@@ -1533,7 +1601,19 @@
         }
       }
 
-      mapControls.loadButton.addEventListener("click", loadOpenMap);
+      mapControls.searchButton.addEventListener("click", searchMapAddress);
+      mapControls.resultSelect.addEventListener("change", () => {
+        mapControls.showAddressButton.disabled = !mapControls.resultSelect.value;
+      });
+      mapControls.showAddressButton.addEventListener("click", () => {
+        const selectedIndex = Number(mapControls.resultSelect.value);
+        const selectedPlace = geocodedPlaces[selectedIndex];
+        if (!selectedPlace) {
+          setMapStatus("地図に表示する場所を選択してください。", "error");
+          return;
+        }
+        loadOpenMap(selectedPlace.geometry.coordinates);
+      });
       mapControls.startButton.addEventListener("click", () => {
         selectionBounds = null;
         selectionStart = null;
