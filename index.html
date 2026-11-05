@@ -854,6 +854,64 @@
       white-space: nowrap;
     }
 
+    .project-storage {
+      display: grid;
+      gap: 12px;
+      margin: 18px 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+    }
+
+    .storage-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 8px;
+    }
+
+    .storage-field {
+      display: grid;
+      min-width: 180px;
+      flex: 1;
+      gap: 5px;
+      color: #44534e;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .storage-field input,
+    .storage-field select {
+      min-height: 36px;
+      padding: 6px 8px;
+      border: 1px solid #d5ded9;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .storage-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .storage-status[data-state="error"] {
+      color: #a23c30;
+    }
+
+    .storage-status[data-state="success"] {
+      color: var(--green);
+    }
+
+    .print-button {
+      margin: 0 0 10px;
+    }
+
     footer {
       margin-top: 24px;
       color: var(--muted);
@@ -963,6 +1021,8 @@
       .notice,
       .editor,
       .preview-heading,
+      .print-button,
+      .project-storage,
       .attachments-section,
       footer {
         display: none !important;
@@ -1014,6 +1074,102 @@
 
       .paper-note {
         color: #222;
+      }
+
+      body.print-target-map .topbar,
+      body.print-target-map .intro,
+      body.print-target-map .notice,
+      body.print-target-map .editor,
+      body.print-target-map .preview-panel,
+      body.print-target-map .project-storage,
+      body.print-target-map .work-diagram-section,
+      body.print-target-map footer,
+      body.print-target-left .topbar,
+      body.print-target-left .intro,
+      body.print-target-left .notice,
+      body.print-target-left .editor,
+      body.print-target-left .preview-panel,
+      body.print-target-left .project-storage,
+      body.print-target-left .work-diagram-section,
+      body.print-target-left footer,
+      body.print-target-right .topbar,
+      body.print-target-right .intro,
+      body.print-target-right .notice,
+      body.print-target-right .editor,
+      body.print-target-right .preview-panel,
+      body.print-target-right .project-storage,
+      body.print-target-right .work-diagram-section,
+      body.print-target-right footer {
+        display: none !important;
+      }
+
+      body.print-target-map .attachments-section,
+      body.print-target-left .attachments-section,
+      body.print-target-right .attachments-section {
+        display: block !important;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 10mm;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      body.print-target-map .panel-heading,
+      body.print-target-left .panel-heading,
+      body.print-target-right .panel-heading,
+      body.print-target-map .attachments-intro,
+      body.print-target-left .attachments-intro,
+      body.print-target-right .attachments-intro {
+        display: none !important;
+      }
+
+      body.print-target-map .attachments-grid,
+      body.print-target-left .attachments-grid,
+      body.print-target-right .attachments-grid {
+        display: block;
+        padding: 0;
+      }
+
+      body.print-target-map .attachment-card:not([data-image-slot="map"]),
+      body.print-target-left .attachment-card:not([data-image-slot="left"]),
+      body.print-target-right .attachment-card:not([data-image-slot="right"]) {
+        display: none !important;
+      }
+
+      body.print-target-map .attachment-description,
+      body.print-target-left .attachment-description,
+      body.print-target-right .attachment-description,
+      body.print-target-map .map-search-links,
+      body.print-target-map .map-tools,
+      body.print-target-map .map-canvas-frame,
+      body.print-target-map .attachment-actions,
+      body.print-target-left .attachment-actions,
+      body.print-target-right .attachment-actions,
+      body.print-target-map .image-status,
+      body.print-target-left .image-status,
+      body.print-target-right .image-status {
+        display: none !important;
+      }
+
+      body.print-target-map .image-frame,
+      body.print-target-left .image-frame,
+      body.print-target-right .image-frame {
+        width: 180mm;
+        height: 240mm;
+        margin-top: 8mm;
+        border: 0;
+        background: #fff;
+      }
+
+      body.print-target-map .image-preview,
+      body.print-target-left .image-preview,
+      body.print-target-right .image-preview {
+        width: 180mm;
+        height: 240mm;
+        object-fit: contain;
+        background: #fff;
       }
 
       body.print-work-diagram .topbar,
@@ -1073,6 +1229,24 @@
       <p class="eyebrow">ROAD USE PERMIT</p>
       <h1 id="page-title">申請書を作成する</h1>
       <p class="intro-copy">現場の情報を入力すると、右側の申請書プレビューに反映されます。書類上の文字を直接クリックして編集することもできます。</p>
+    </section>
+
+    <section class="project-storage" aria-label="現場データの保存と再開">
+      <div class="storage-controls">
+        <label class="storage-field">現場データ名
+          <input type="text" data-project-name placeholder="現場住所など、分かりやすい名前">
+        </label>
+        <button class="attachment-button" type="button" data-save-project>現場データを保存</button>
+        <button class="attachment-button" type="button" data-new-project>新しい現場</button>
+        <label class="storage-field">保存済み現場
+          <select data-saved-projects>
+            <option value="">保存済み現場はありません</option>
+          </select>
+        </label>
+        <button class="attachment-button" type="button" data-load-project disabled>選択した現場を開く</button>
+        <button class="attachment-button" type="button" data-delete-project disabled>選択した現場を削除</button>
+      </div>
+      <p class="storage-status" data-storage-status role="status" aria-live="polite">現場データはこのブラウザー内に保存できます。大切なデータは別途保管してください。</p>
     </section>
 
     <aside class="notice" aria-label="ご利用前の確認">
@@ -1148,7 +1322,7 @@
             </label>
           </div>
 
-          <p class="privacy-note">この初期版では入力内容をブラウザー内に保存しません。ページを閉じると入力内容は失われます。保存機能は後続段階で追加します。</p>
+          <p class="privacy-note">入力内容は「現場データを保存」を押したときに、このブラウザー内へ保存されます。保存前の変更はページを閉じると失われます。</p>
         </div>
       </section>
 
@@ -1160,6 +1334,7 @@
           </div>
           <span class="draft-badge">作成中</span>
         </div>
+        <button class="attachment-button print-button" type="button" data-print-application>申請書を印刷</button>
         <div class="paper-wrap">
           <article class="paper" aria-label="道路使用許可申請書プレビュー">
             <p class="form-reference">別記様式第六（第十条関係）</p>
@@ -1291,6 +1466,7 @@
             <input class="file-input" id="map-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="map-image-input">地図画像を選択</label>
             <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+            <button class="attachment-button" type="button" data-print-image="map">地図画像を印刷</button>
           </div>
           <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
         </article>
@@ -1306,6 +1482,7 @@
             <input class="file-input" id="left-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="left-image-input">左方向の写真を選択</label>
             <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+            <button class="attachment-button" type="button" data-print-image="left">左方向写真を印刷</button>
           </div>
           <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
         </article>
@@ -1321,11 +1498,12 @@
             <input class="file-input" id="right-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="right-image-input">右方向の写真を選択</label>
             <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+            <button class="attachment-button" type="button" data-print-image="right">右方向写真を印刷</button>
           </div>
           <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
         </article>
       </div>
-      <p class="attachments-intro">画像は1枚あたり10MB・2,000万画素までです。現在はこのページ内での一時表示のみで、再読み込みやページを閉じると消去されます。</p>
+      <p class="attachments-intro">画像は1枚あたり10MB・2,000万画素までです。保存ボタンを押した画像は現場データと一緒にこのブラウザー内へ保存されます。重要データは別途保管してください。</p>
     </section>
 
     <section class="work-diagram-section attachments-section" aria-labelledby="work-diagram-title">
@@ -1334,7 +1512,7 @@
         <span class="step">STEP 3 / 5</span>
       </div>
       <div class="work-diagram-controls">
-        <p class="map-service-note">背景画像を読み込み、実測で分かる2点間の距離を使って縮尺を合わせます。コーン・バリケード・作業車両を追加して配置できます。画像と作図内容は現在このページ内だけに保持されます。</p>
+        <p class="map-service-note">背景画像を読み込み、実測で分かる2点間の距離を使って縮尺を合わせます。コーン・バリケード・作業車両を追加して配置できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
         <div class="diagram-toolbar">
           <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
           <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
@@ -1382,6 +1560,15 @@
       const locationInput = inputs.get("location");
       const mapLink = document.querySelector("[data-map-link]");
       const osmSearchLink = document.querySelector("[data-osm-search]");
+      const storageControls = {
+        name: document.querySelector("[data-project-name]"),
+        saveButton: document.querySelector("[data-save-project]"),
+        newButton: document.querySelector("[data-new-project]"),
+        projects: document.querySelector("[data-saved-projects]"),
+        loadButton: document.querySelector("[data-load-project]"),
+        deleteButton: document.querySelector("[data-delete-project]"),
+        status: document.querySelector("[data-storage-status]")
+      };
       const maxImageBytes = 10 * 1024 * 1024;
       const maxImagePixels = 20_000_000;
       const imageSlots = [...document.querySelectorAll("[data-image-slot]")].map((card) => ({
@@ -1391,6 +1578,7 @@
         status: card.querySelector("[data-image-status]"),
         removeButton: card.querySelector("[data-remove-image]"),
         objectUrl: null,
+        fileName: null,
         requestId: 0
       }));
       const mapControls = {
@@ -1438,6 +1626,333 @@
         dragItem: null,
         nextItemId: 1
       };
+      const storageDatabaseName = "road-use-permit-projects";
+      const storageStoreName = "projects";
+      let storageDatabase = null;
+      let currentProjectId = null;
+      let pendingStorageAction = false;
+
+      function setStorageStatus(message, state) {
+        storageControls.status.textContent = message;
+        if (state) {
+          storageControls.status.dataset.state = state;
+        } else {
+          delete storageControls.status.dataset.state;
+        }
+      }
+
+      function openStorageDatabase() {
+        if (storageDatabase) {
+          return Promise.resolve(storageDatabase);
+        }
+        if (!window.indexedDB) {
+          return Promise.reject(new Error("このブラウザーではローカル保存を利用できません。"));
+        }
+
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(storageDatabaseName, 1);
+          request.onupgradeneeded = () => {
+            const database = request.result;
+            if (!database.objectStoreNames.contains(storageStoreName)) {
+              database.createObjectStore(storageStoreName, { keyPath: "id" });
+            }
+          };
+          request.onerror = () => reject(request.error || new Error("保存領域を開けませんでした。"));
+          request.onsuccess = () => {
+            storageDatabase = request.result;
+            storageDatabase.onversionchange = () => storageDatabase.close();
+            resolve(storageDatabase);
+          };
+        });
+      }
+
+      async function runStorageRequest(mode, operation) {
+        const database = await openStorageDatabase();
+        return new Promise((resolve, reject) => {
+          const transaction = database.transaction(storageStoreName, mode);
+          const request = operation(transaction.objectStore(storageStoreName));
+          let result;
+          request.onsuccess = () => {
+            result = request.result;
+          };
+          request.onerror = () => reject(request.error || new Error("保存領域の読み書きに失敗しました。"));
+          transaction.oncomplete = () => resolve(result);
+          transaction.onerror = () => reject(transaction.error || new Error("保存領域の読み書きに失敗しました。"));
+          transaction.onabort = () => reject(transaction.error || new Error("保存処理が中断されました。"));
+        });
+      }
+
+      async function refreshSavedProjects(selectedId = "") {
+        const records = await runStorageRequest("readonly", (store) => store.getAll());
+        records.sort((a, b) => b.updatedAt - a.updatedAt);
+        storageControls.projects.replaceChildren();
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = records.length ? "保存済み現場を選択してください" : "保存済み現場はありません";
+        storageControls.projects.append(placeholder);
+        records.forEach((record) => {
+          const option = document.createElement("option");
+          option.value = record.id;
+          option.textContent = `${record.name}（${new Date(record.updatedAt).toLocaleString("ja-JP")}）`;
+          storageControls.projects.append(option);
+        });
+        storageControls.projects.value = selectedId;
+        const hasSelection = Boolean(storageControls.projects.value);
+        storageControls.loadButton.disabled = !hasSelection;
+        storageControls.deleteButton.disabled = !hasSelection;
+      }
+
+      async function getSavedImageBlob(slot) {
+        if (!slot.objectUrl) {
+          return null;
+        }
+        const response = await fetch(slot.objectUrl);
+        if (!response.ok) {
+          throw new Error(`${slot.image.alt}を保存用に読み込めませんでした。`);
+        }
+        return response.blob();
+      }
+
+      async function buildProjectRecord() {
+        const images = {};
+        for (const [index, slot] of imageSlots.entries()) {
+          images[slot.image.alt] = {
+            name: slot.fileName || `image-${index + 1}`,
+            blob: await getSavedImageBlob(slot)
+          };
+        }
+
+        let diagramBackground = null;
+        if (diagramState.backgroundUrl) {
+          const response = await fetch(diagramState.backgroundUrl);
+          if (!response.ok) {
+            throw new Error("作業体図の背景画像を保存用に読み込めませんでした。");
+          }
+          diagramBackground = await response.blob();
+        }
+
+        const formValues = Object.fromEntries([...inputs].map(([name, input]) => [name, input.value]));
+        const previewValues = Object.fromEntries(previews.map((preview) => [preview.dataset.preview, preview.textContent]));
+        const now = Date.now();
+        return {
+          id: currentProjectId || (crypto.randomUUID ? crypto.randomUUID() : `${now}-${Math.random().toString(36).slice(2)}`),
+          name: storageControls.name.value.trim() || locationInput.value.trim() || `現場 ${new Date(now).toLocaleDateString("ja-JP")}`,
+          updatedAt: now,
+          formValues,
+          previewValues,
+          images,
+          map: {
+            latitude: mapControls.latitude.value,
+            longitude: mapControls.longitude.value,
+            zoom: mapControls.zoom.value,
+            center: mapInstance && mapLoaded ? mapInstance.getCenter().toArray() : null,
+            currentZoom: mapInstance && mapLoaded ? mapInstance.getZoom() : null
+          },
+          diagram: {
+            background: diagramBackground,
+            backgroundName: diagramState.backgroundUrl ? diagramControls.backgroundInput.dataset.fileName || "work-diagram-background" : null,
+            items: diagramState.items.map((item) => ({ ...item })),
+            calibrationPoints: diagramState.calibrationPoints.map((point) => ({ ...point })),
+            pixelsPerMm: diagramState.pixelsPerMm,
+            calibrationDistance: diagramControls.calibrationDistance.value,
+            zoom: diagramControls.zoom.value,
+            canvasWidth: diagramControls.canvas.width,
+            canvasHeight: diagramControls.canvas.height,
+            nextItemId: diagramState.nextItemId
+          }
+        };
+      }
+
+      async function saveCurrentProject() {
+        if (pendingStorageAction) {
+          return;
+        }
+        pendingStorageAction = true;
+        storageControls.saveButton.disabled = true;
+        setStorageStatus("現場データを保存しています…");
+        try {
+          const record = await buildProjectRecord();
+          await runStorageRequest("readwrite", (store) => store.put(record));
+          currentProjectId = record.id;
+          storageControls.name.value = record.name;
+          await refreshSavedProjects(currentProjectId);
+          setStorageStatus(`「${record.name}」をこのブラウザーに保存しました。`, "success");
+        } catch (error) {
+          setStorageStatus(`保存できませんでした。ブラウザーの保存容量を確認してください。${error.message ? `（${error.message}）` : ""}`, "error");
+        } finally {
+          pendingStorageAction = false;
+          storageControls.saveButton.disabled = false;
+        }
+      }
+
+      async function restoreSavedProject(record) {
+        inputs.forEach((input, name) => {
+          input.value = Object.hasOwn(record.formValues, name) ? record.formValues[name] : "";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        previews.forEach((preview) => {
+          preview.textContent = Object.hasOwn(record.previewValues, preview.dataset.preview)
+            ? record.previewValues[preview.dataset.preview]
+            : "";
+          preview.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+
+        for (const slot of imageSlots) {
+          removeImage(slot);
+          const savedImage = record.images[slot.image.alt];
+          if (savedImage && savedImage.blob) {
+            const file = new File([savedImage.blob], savedImage.name, { type: savedImage.blob.type });
+            const loaded = await displayImageFile(slot, file, savedImage.name);
+            if (!loaded) {
+              throw new Error(`${savedImage.name}を復元できませんでした。`);
+            }
+          }
+        }
+
+        if (diagramState.backgroundUrl) {
+          URL.revokeObjectURL(diagramState.backgroundUrl);
+          diagramState.backgroundUrl = null;
+        }
+        diagramState.background = null;
+        diagramState.items = record.diagram.items || [];
+        diagramState.selectedId = null;
+        diagramState.calibrationMode = false;
+        diagramState.calibrationPoints = record.diagram.calibrationPoints || [];
+        diagramState.pixelsPerMm = record.diagram.pixelsPerMm || null;
+        diagramState.nextItemId = record.diagram.nextItemId || (diagramState.items.length + 1);
+        diagramControls.calibrationDistance.value = record.diagram.calibrationDistance || "";
+        diagramControls.zoom.value = record.diagram.zoom || "100";
+        diagramControls.canvas.style.width = `${diagramControls.zoom.value}%`;
+        diagramControls.selectionControls.hidden = true;
+        diagramControls.deleteButton.disabled = true;
+        diagramControls.wrap.dataset.mode = "move";
+        if (record.diagram.background) {
+          const backgroundFile = new File(
+            [record.diagram.background],
+            record.diagram.backgroundName || "work-diagram-background.png",
+            { type: record.diagram.background.type || "image/png" }
+          );
+          await loadDiagramBackground(backgroundFile);
+          diagramState.items = record.diagram.items || [];
+          diagramState.calibrationPoints = record.diagram.calibrationPoints || [];
+          diagramState.pixelsPerMm = record.diagram.pixelsPerMm || null;
+          diagramState.nextItemId = record.diagram.nextItemId || (diagramState.items.length + 1);
+        } else {
+          diagramState.items = [];
+          diagramState.calibrationPoints = [];
+          diagramState.pixelsPerMm = null;
+          diagramControls.canvas.width = record.diagram.canvasWidth || 1200;
+          diagramControls.canvas.height = record.diagram.canvasHeight || 800;
+        }
+        drawWorkDiagram();
+        mapControls.latitude.value = record.map.latitude || "";
+        mapControls.longitude.value = record.map.longitude || "";
+        mapControls.zoom.value = record.map.zoom || "17";
+        if (record.map.center && mapInstance && mapLoaded) {
+          mapInstance.jumpTo({ center: record.map.center, zoom: record.map.currentZoom || Number(mapControls.zoom.value) });
+        }
+        storageControls.name.value = record.name;
+        currentProjectId = record.id;
+      }
+
+      async function loadSelectedProject() {
+        if (pendingStorageAction || !storageControls.projects.value) {
+          return;
+        }
+        pendingStorageAction = true;
+        storageControls.loadButton.disabled = true;
+        setStorageStatus("選択した現場データを読み込んでいます…");
+        try {
+          const record = await runStorageRequest("readonly", (store) => store.get(storageControls.projects.value));
+          if (!record) {
+            throw new Error("選択した現場データが見つかりません。");
+          }
+          await restoreSavedProject(record);
+          await refreshSavedProjects(record.id);
+          setStorageStatus(`「${record.name}」を開きました。`, "success");
+        } catch (error) {
+          setStorageStatus(`現場データを開けませんでした。${error.message ? `（${error.message}）` : ""}`, "error");
+        } finally {
+          pendingStorageAction = false;
+          storageControls.loadButton.disabled = !storageControls.projects.value;
+        }
+      }
+
+      async function deleteSelectedProject() {
+        const id = storageControls.projects.value;
+        if (pendingStorageAction || !id) {
+          return;
+        }
+        const selectedOption = storageControls.projects.selectedOptions[0];
+        if (!window.confirm(`「${selectedOption.textContent}」を削除しますか？この操作は取り消せません。`)) {
+          return;
+        }
+        pendingStorageAction = true;
+        storageControls.deleteButton.disabled = true;
+        try {
+          await runStorageRequest("readwrite", (store) => store.delete(id));
+          if (currentProjectId === id) {
+            currentProjectId = null;
+          }
+          await refreshSavedProjects();
+          setStorageStatus("選択した現場データを削除しました。", "success");
+        } catch (error) {
+          setStorageStatus(`現場データを削除できませんでした。${error.message ? `（${error.message}）` : ""}`, "error");
+        } finally {
+          pendingStorageAction = false;
+          storageControls.deleteButton.disabled = !storageControls.projects.value;
+        }
+      }
+
+      function clearCurrentProject() {
+        if (!window.confirm("現在の入力内容・画像・作図を消去して、新しい現場を始めますか？保存済み現場は削除されません。")) {
+          return;
+        }
+        inputs.forEach((input, name) => {
+          input.value = "";
+          updatePreviews(name, "");
+          if (name === "location") {
+            updateMapLink("");
+          }
+        });
+        previews.forEach((preview) => {
+          preview.textContent = "";
+        });
+        imageSlots.forEach((slot) => {
+          removeImage(slot);
+          setImageStatus(slot, "画像はまだ選択されていません。");
+        });
+        if (diagramState.backgroundUrl) {
+          URL.revokeObjectURL(diagramState.backgroundUrl);
+        }
+        diagramState.background = null;
+        diagramState.backgroundUrl = null;
+        diagramState.items = [];
+        diagramState.selectedId = null;
+        diagramState.calibrationMode = false;
+        diagramState.calibrationPoints = [];
+        diagramState.pixelsPerMm = null;
+        diagramState.nextItemId = 1;
+        diagramControls.canvas.width = 1200;
+        diagramControls.canvas.height = 800;
+        diagramControls.calibrationDistance.value = "";
+        diagramControls.selectionControls.hidden = true;
+        diagramControls.deleteButton.disabled = true;
+        diagramControls.backgroundInput.dataset.fileName = "";
+        diagramControls.wrap.dataset.mode = "move";
+        mapControls.latitude.value = "";
+        mapControls.longitude.value = "";
+        mapControls.zoom.value = "17";
+        mapControls.frame.hidden = true;
+        storageControls.name.value = "";
+        currentProjectId = null;
+        storageControls.projects.value = "";
+        storageControls.loadButton.disabled = true;
+        storageControls.deleteButton.disabled = true;
+        drawWorkDiagram();
+        setDiagramStatus("背景画像を選択してください。縮尺を設定するまでは、作図アイテムの寸法は画面上の目安です。");
+        setStorageStatus("新しい現場です。入力が終わったら保存してください。");
+      }
 
       function updatePreviews(name, value) {
         previews
@@ -1489,6 +2004,7 @@
           URL.revokeObjectURL(slot.objectUrl);
           slot.objectUrl = null;
         }
+        slot.fileName = null;
         slot.image.removeAttribute("src");
         slot.image.hidden = true;
         slot.empty.hidden = false;
@@ -1500,47 +2016,54 @@
         slot.requestId = requestId;
         if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
           setImageStatus(slot, "JPEG、PNG、WebP、GIF形式の画像を選んでください。現在の画像はそのままです。", "error");
-          return;
+          return Promise.resolve(false);
         }
         if (file.size > maxImageBytes) {
           setImageStatus(slot, "画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。現在の画像はそのままです。", "error");
-          return;
+          return Promise.resolve(false);
         }
 
         const nextUrl = URL.createObjectURL(file);
         const probe = new Image();
 
-        probe.onload = () => {
-          if (requestId !== slot.requestId) {
+        return new Promise((resolve) => {
+          probe.onload = () => {
+            if (requestId !== slot.requestId) {
+              URL.revokeObjectURL(nextUrl);
+              resolve(false);
+              return;
+            }
+            if (probe.naturalWidth * probe.naturalHeight > maxImagePixels) {
+              URL.revokeObjectURL(nextUrl);
+              setImageStatus(slot, "画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。現在の画像はそのままです。", "error");
+              resolve(false);
+              return;
+            }
+
+            if (slot.objectUrl) {
+              URL.revokeObjectURL(slot.objectUrl);
+            }
+            slot.objectUrl = nextUrl;
+            slot.fileName = file.name;
+            slot.image.src = nextUrl;
+            slot.image.hidden = false;
+            slot.empty.hidden = true;
+            slot.removeButton.hidden = false;
+            setImageStatus(slot, `${description} を表示しています。`, "success");
+            resolve(true);
+          };
+
+          probe.onerror = () => {
             URL.revokeObjectURL(nextUrl);
-            return;
-          }
-          if (probe.naturalWidth * probe.naturalHeight > maxImagePixels) {
-            URL.revokeObjectURL(nextUrl);
-            setImageStatus(slot, "画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。現在の画像はそのままです。", "error");
-            return;
-          }
+            if (requestId === slot.requestId) {
+              setImageStatus(slot, "画像を読み込めませんでした。別の画像を選んでください。現在の画像はそのままです。", "error");
+            }
+            resolve(false);
+          };
 
-          if (slot.objectUrl) {
-            URL.revokeObjectURL(slot.objectUrl);
-          }
-          slot.objectUrl = nextUrl;
-          slot.image.src = nextUrl;
-          slot.image.hidden = false;
-          slot.empty.hidden = true;
-          slot.removeButton.hidden = false;
-          setImageStatus(slot, `${description} を表示しています。再読み込みすると消去されます。`, "success");
-        };
-
-        probe.onerror = () => {
-          URL.revokeObjectURL(nextUrl);
-          if (requestId === slot.requestId) {
-            setImageStatus(slot, "画像を読み込めませんでした。別の画像を選んでください。現在の画像はそのままです。", "error");
-          }
-        };
-
-        probe.src = nextUrl;
-        setImageStatus(slot, "画像を確認しています…");
+          probe.src = nextUrl;
+          setImageStatus(slot, "画像を確認しています…");
+        });
       }
 
       function attachImageHandlers(slot) {
@@ -2045,39 +2568,45 @@
       function loadDiagramBackground(file) {
         if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
           setDiagramStatus("背景はJPEG、PNG、WebP、GIF形式を選択してください。", "error");
-          return;
+          return Promise.resolve(false);
         }
         if (file.size > maxImageBytes) {
           setDiagramStatus("背景画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。", "error");
-          return;
+          return Promise.resolve(false);
         }
 
         const nextUrl = URL.createObjectURL(file);
         const image = new Image();
-        image.onload = () => {
-          if (image.naturalWidth * image.naturalHeight > maxImagePixels) {
+        return new Promise((resolve) => {
+          image.onload = () => {
+            if (image.naturalWidth * image.naturalHeight > maxImagePixels) {
+              URL.revokeObjectURL(nextUrl);
+              setDiagramStatus("背景画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。", "error");
+              resolve(false);
+              return;
+            }
+            if (diagramState.backgroundUrl) {
+              URL.revokeObjectURL(diagramState.backgroundUrl);
+            }
+            diagramState.background = image;
+            diagramState.backgroundUrl = nextUrl;
+            diagramControls.backgroundInput.dataset.fileName = file.name;
+            const canvasSize = 1200 / Math.max(image.naturalWidth, image.naturalHeight);
+            diagramControls.canvas.width = Math.max(1, Math.round(image.naturalWidth * canvasSize));
+            diagramControls.canvas.height = Math.max(1, Math.round(image.naturalHeight * canvasSize));
+            diagramState.calibrationPoints = [];
+            diagramState.pixelsPerMm = null;
+            drawWorkDiagram();
+            setDiagramStatus(`背景「${file.name}」を読み込みました。実測した2点間の距離で縮尺を設定してください。`, "success");
+            resolve(true);
+          };
+          image.onerror = () => {
             URL.revokeObjectURL(nextUrl);
-            setDiagramStatus("背景画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。", "error");
-            return;
-          }
-          if (diagramState.backgroundUrl) {
-            URL.revokeObjectURL(diagramState.backgroundUrl);
-          }
-          diagramState.background = image;
-          diagramState.backgroundUrl = nextUrl;
-          const canvasSize = 1200 / Math.max(image.naturalWidth, image.naturalHeight);
-          diagramControls.canvas.width = Math.max(1, Math.round(image.naturalWidth * canvasSize));
-          diagramControls.canvas.height = Math.max(1, Math.round(image.naturalHeight * canvasSize));
-          diagramState.calibrationPoints = [];
-          diagramState.pixelsPerMm = null;
-          drawWorkDiagram();
-          setDiagramStatus(`背景「${file.name}」を読み込みました。実測した2点間の距離で縮尺を設定してください。`, "success");
-        };
-        image.onerror = () => {
-          URL.revokeObjectURL(nextUrl);
-          setDiagramStatus("背景画像を読み込めませんでした。別の画像を選んでください。", "error");
-        };
-        image.src = nextUrl;
+            setDiagramStatus("背景画像を読み込めませんでした。別の画像を選んでください。", "error");
+            resolve(false);
+          };
+          image.src = nextUrl;
+        });
       }
 
       function addDiagramItem(type) {
@@ -2237,12 +2766,43 @@
       });
       window.addEventListener("afterprint", () => {
         document.body.classList.remove("print-work-diagram");
+        document.body.classList.remove("print-target-map", "print-target-left", "print-target-right");
         drawWorkDiagram();
       });
       diagramControls.deleteButton.disabled = true;
       diagramControls.canvas.width = 1200;
       diagramControls.canvas.height = 800;
       drawWorkDiagram();
+
+      storageControls.saveButton.addEventListener("click", saveCurrentProject);
+      storageControls.newButton.addEventListener("click", clearCurrentProject);
+      storageControls.projects.addEventListener("change", () => {
+        const hasSelection = Boolean(storageControls.projects.value);
+        storageControls.loadButton.disabled = !hasSelection;
+        storageControls.deleteButton.disabled = !hasSelection;
+      });
+      storageControls.loadButton.addEventListener("click", loadSelectedProject);
+      storageControls.deleteButton.addEventListener("click", deleteSelectedProject);
+      document.querySelector("[data-print-application]").addEventListener("click", () => window.print());
+      document.querySelectorAll("[data-print-image]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = button.dataset.printImage;
+          const slot = imageSlots.find((candidate) =>
+            candidate.image.closest("[data-image-slot]")?.dataset.imageSlot === target
+          );
+          if (!slot || slot.image.hidden) {
+            setStorageStatus("印刷する画像を先に取り込んでください。", "error");
+            return;
+          }
+          document.body.classList.add(`print-target-${target}`);
+          window.print();
+        });
+      });
+      refreshSavedProjects().then(() => {
+        setStorageStatus("現場データはこのブラウザー内に保存できます。大切なデータは別途保管してください。");
+      }).catch((error) => {
+        setStorageStatus(`ブラウザー内保存を利用できません。${error.message ? `（${error.message}）` : ""}`, "error");
+      });
 
       inputs.forEach((input, name) => {
         input.addEventListener("input", () => {
