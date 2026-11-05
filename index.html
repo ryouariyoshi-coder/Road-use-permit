@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f7f4">
   <title>道路使用許可申請書作成ツール</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
+  <script defer src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -557,6 +559,111 @@
       pointer-events: none;
     }
 
+    .map-search-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .map-search-links .map-link {
+      margin-bottom: 0;
+    }
+
+    .map-link-secondary {
+      border-color: #cbd6d0;
+      background: #fff;
+      color: #35463f;
+    }
+
+    .map-link-secondary:hover {
+      background: #f5faf7;
+    }
+
+    .map-tools {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .map-coordinate-fields {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .map-coordinate-fields label {
+      display: grid;
+      gap: 5px;
+      color: #44534e;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .map-coordinate-fields input {
+      width: 100%;
+      min-width: 0;
+      min-height: 36px;
+      padding: 6px 8px;
+      border: 1px solid #d5ded9;
+      border-radius: 6px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .map-tool-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .map-canvas-frame {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #cbd6d0;
+      border-radius: 8px;
+      background: #eef1ed;
+    }
+
+    .map-canvas-frame[hidden] {
+      display: none;
+    }
+
+    .map-canvas-frame.map-selecting {
+      cursor: crosshair;
+    }
+
+    .maplibre-map {
+      width: 100%;
+      height: 360px;
+    }
+
+    .map-selection {
+      position: absolute;
+      z-index: 3;
+      border: 2px solid #176b53;
+      background: rgb(23 107 83 / 14%);
+      pointer-events: none;
+    }
+
+    .map-instructions {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
+    .map-service-note {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.6;
+    }
+
     .image-frame {
       display: grid;
       min-height: 180px;
@@ -713,6 +820,18 @@
       .attachments-grid {
         grid-template-columns: 1fr;
         padding: 14px;
+      }
+
+      .map-coordinate-fields {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .map-coordinate-fields label:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .maplibre-map {
+        height: 300px;
       }
 
       .attachment-card:first-child {
@@ -995,8 +1114,38 @@
       <div class="attachments-grid">
         <article class="attachment-card" data-image-slot="map">
           <h3>現場位置図</h3>
-          <p class="attachment-description">入力した現場住所を地図サービスで開き、確認済みの位置図画像を取り込みます。</p>
-          <a class="map-link" data-map-link aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">Google マップで現場を開く</a>
+          <p class="attachment-description">OpenFreeMap（OpenStreetMapの地図データ）を表示し、範囲を切り取って出典表示付きで取り込みます。</p>
+          <div class="map-search-links">
+            <a class="map-link" data-map-link aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">Google マップで検索</a>
+            <a class="map-link map-link-secondary" data-osm-search aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">OpenStreetMapで場所を探す</a>
+          </div>
+          <div class="map-tools">
+            <p class="map-service-note">地図の中心座標を入力してください。住所から地図を探すリンクは、クリック時に住所を外部サイトへ送信します。地図画像はOpenFreeMapへ必要な地図タイルだけを問い合わせて表示します。</p>
+            <div class="map-coordinate-fields">
+              <label>中心の緯度
+                <input type="number" data-map-latitude min="-85" max="85" step="0.000001" placeholder="例：35.681236" inputmode="decimal">
+              </label>
+              <label>中心の経度
+                <input type="number" data-map-longitude min="-180" max="180" step="0.000001" placeholder="例：139.767125" inputmode="decimal">
+              </label>
+              <label>縮尺（拡大率）
+                <input type="number" data-map-zoom min="14" max="19" step="1" value="17" inputmode="numeric">
+              </label>
+            </div>
+            <p class="map-instructions">OpenStreetMapで場所を開き、URLの「#map=ズーム/緯度/経度」から中心座標を入力します。地図上でもドラッグ・ホイールで位置と拡大率を調整できます。</p>
+            <div class="map-tool-buttons">
+              <button class="attachment-button" type="button" data-load-map>地図を表示</button>
+              <button class="attachment-button" type="button" data-start-map-selection disabled>範囲を選択</button>
+              <button class="attachment-button" type="button" data-capture-map hidden disabled>選んだ範囲を位置図に取り込む</button>
+              <button class="attachment-button" type="button" data-cancel-map-selection hidden>選択をやめる</button>
+            </div>
+            <p class="map-instructions" data-map-status role="status" aria-live="polite">地図の表示にはインターネット接続が必要です。</p>
+            <p class="map-service-note">切り取った地図画像には「OpenFreeMap」「OpenMapTiles」「OpenStreetMap」の出典を付けます。OpenFreeMap公開サービスは稼働保証がないため、利用できない場合は別の画像を選んでください。</p>
+          </div>
+          <div class="map-canvas-frame" data-map-frame hidden>
+            <div class="maplibre-map" data-osm-map></div>
+            <div class="map-selection" data-map-selection hidden></div>
+          </div>
           <div class="image-frame">
             <p class="image-placeholder" data-image-empty>地図画像はまだ選択されていません。</p>
             <img class="image-preview" data-image-preview alt="取り込んだ現場位置図" hidden>
@@ -1053,6 +1202,7 @@
       const previews = [...document.querySelectorAll("[data-preview]")];
       const locationInput = inputs.get("location");
       const mapLink = document.querySelector("[data-map-link]");
+      const osmSearchLink = document.querySelector("[data-osm-search]");
       const maxImageBytes = 10 * 1024 * 1024;
       const maxImagePixels = 20_000_000;
       const imageSlots = [...document.querySelectorAll("[data-image-slot]")].map((card) => ({
@@ -1064,6 +1214,25 @@
         objectUrl: null,
         requestId: 0
       }));
+      const mapControls = {
+        latitude: document.querySelector("[data-map-latitude]"),
+        longitude: document.querySelector("[data-map-longitude]"),
+        zoom: document.querySelector("[data-map-zoom]"),
+        frame: document.querySelector("[data-map-frame]"),
+        container: document.querySelector("[data-osm-map]"),
+        selection: document.querySelector("[data-map-selection]"),
+        status: document.querySelector("[data-map-status]"),
+        loadButton: document.querySelector("[data-load-map]"),
+        startButton: document.querySelector("[data-start-map-selection]"),
+        captureButton: document.querySelector("[data-capture-map]"),
+        cancelButton: document.querySelector("[data-cancel-map-selection]")
+      };
+      const mapSlot = imageSlots.find((slot) => slot.image.alt === "取り込んだ現場位置図");
+      let mapInstance = null;
+      let mapLoaded = false;
+      let selectingMapArea = false;
+      let selectionStart = null;
+      let selectionBounds = null;
 
       function updatePreviews(name, value) {
         previews
@@ -1080,15 +1249,24 @@
           mapLink.removeAttribute("href");
           mapLink.setAttribute("aria-disabled", "true");
           mapLink.setAttribute("tabindex", "-1");
+          osmSearchLink.removeAttribute("href");
+          osmSearchLink.setAttribute("aria-disabled", "true");
+          osmSearchLink.setAttribute("tabindex", "-1");
           return;
         }
 
-        const url = new URL("https://www.google.com/maps/search/");
-        url.searchParams.set("api", "1");
-        url.searchParams.set("query", address.trim());
-        mapLink.href = url.toString();
+        const googleUrl = new URL("https://www.google.com/maps/search/");
+        googleUrl.searchParams.set("api", "1");
+        googleUrl.searchParams.set("query", address.trim());
+        mapLink.href = googleUrl.toString();
         mapLink.setAttribute("aria-disabled", "false");
         mapLink.removeAttribute("tabindex");
+
+        const osmUrl = new URL("https://www.openstreetmap.org/search");
+        osmUrl.searchParams.set("query", address.trim());
+        osmSearchLink.href = osmUrl.toString();
+        osmSearchLink.setAttribute("aria-disabled", "false");
+        osmSearchLink.removeAttribute("tabindex");
       }
 
       function setImageStatus(slot, message, state) {
@@ -1112,59 +1290,61 @@
         slot.removeButton.hidden = true;
       }
 
+      function displayImageFile(slot, file, description) {
+        const requestId = slot.requestId + 1;
+        slot.requestId = requestId;
+        if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+          setImageStatus(slot, "JPEG、PNG、WebP、GIF形式の画像を選んでください。現在の画像はそのままです。", "error");
+          return;
+        }
+        if (file.size > maxImageBytes) {
+          setImageStatus(slot, "画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。現在の画像はそのままです。", "error");
+          return;
+        }
+
+        const nextUrl = URL.createObjectURL(file);
+        const probe = new Image();
+
+        probe.onload = () => {
+          if (requestId !== slot.requestId) {
+            URL.revokeObjectURL(nextUrl);
+            return;
+          }
+          if (probe.naturalWidth * probe.naturalHeight > maxImagePixels) {
+            URL.revokeObjectURL(nextUrl);
+            setImageStatus(slot, "画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。現在の画像はそのままです。", "error");
+            return;
+          }
+
+          if (slot.objectUrl) {
+            URL.revokeObjectURL(slot.objectUrl);
+          }
+          slot.objectUrl = nextUrl;
+          slot.image.src = nextUrl;
+          slot.image.hidden = false;
+          slot.empty.hidden = true;
+          slot.removeButton.hidden = false;
+          setImageStatus(slot, `${description} を表示しています。再読み込みすると消去されます。`, "success");
+        };
+
+        probe.onerror = () => {
+          URL.revokeObjectURL(nextUrl);
+          if (requestId === slot.requestId) {
+            setImageStatus(slot, "画像を読み込めませんでした。別の画像を選んでください。現在の画像はそのままです。", "error");
+          }
+        };
+
+        probe.src = nextUrl;
+        setImageStatus(slot, "画像を確認しています…");
+      }
+
       function attachImageHandlers(slot) {
         slot.input.addEventListener("change", () => {
           const file = slot.input.files && slot.input.files[0];
           slot.input.value = "";
-          if (!file) {
-            return;
+          if (file) {
+            displayImageFile(slot, file, file.name);
           }
-
-          const requestId = slot.requestId + 1;
-          slot.requestId = requestId;
-          if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
-            setImageStatus(slot, "JPEG、PNG、WebP、GIF形式の画像を選んでください。現在の画像はそのままです。", "error");
-            return;
-          }
-          if (file.size > maxImageBytes) {
-            setImageStatus(slot, "画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。現在の画像はそのままです。", "error");
-            return;
-          }
-
-          const nextUrl = URL.createObjectURL(file);
-          const probe = new Image();
-
-          probe.onload = () => {
-            if (requestId !== slot.requestId) {
-              URL.revokeObjectURL(nextUrl);
-              return;
-            }
-            if (probe.naturalWidth * probe.naturalHeight > maxImagePixels) {
-              URL.revokeObjectURL(nextUrl);
-              setImageStatus(slot, "画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。現在の画像はそのままです。", "error");
-              return;
-            }
-
-            if (slot.objectUrl) {
-              URL.revokeObjectURL(slot.objectUrl);
-            }
-            slot.objectUrl = nextUrl;
-            slot.image.src = nextUrl;
-            slot.image.hidden = false;
-            slot.empty.hidden = true;
-            slot.removeButton.hidden = false;
-            setImageStatus(slot, `${file.name} を表示しています。再読み込みすると消去されます。`, "success");
-          };
-
-          probe.onerror = () => {
-            URL.revokeObjectURL(nextUrl);
-            if (requestId === slot.requestId) {
-              setImageStatus(slot, "画像を読み込めませんでした。別の画像を選んでください。現在の画像はそのままです。", "error");
-            }
-          };
-
-          probe.src = nextUrl;
-          setImageStatus(slot, "画像を確認しています…");
         });
 
         slot.removeButton.addEventListener("click", () => {
@@ -1172,6 +1352,253 @@
           setImageStatus(slot, "画像を削除しました。");
         });
       }
+
+      function setMapStatus(message, state) {
+        mapControls.status.textContent = message;
+        if (state) {
+          mapControls.status.dataset.state = state;
+        } else {
+          delete mapControls.status.dataset.state;
+        }
+      }
+
+      function setMapSelectionMode(active) {
+        selectingMapArea = active;
+        mapControls.frame.classList.toggle("map-selecting", active);
+        mapControls.startButton.hidden = active;
+        mapControls.cancelButton.hidden = !active;
+        mapControls.captureButton.hidden = !selectionBounds;
+        if (mapInstance && mapLoaded) {
+          if (active) {
+            mapInstance.dragPan.disable();
+          } else {
+            mapInstance.dragPan.enable();
+          }
+        }
+      }
+
+      function updateSelectionRectangle(bounds) {
+        mapControls.selection.hidden = !bounds;
+        if (!bounds) {
+          return;
+        }
+        mapControls.selection.style.left = `${bounds.x}px`;
+        mapControls.selection.style.top = `${bounds.y}px`;
+        mapControls.selection.style.width = `${bounds.width}px`;
+        mapControls.selection.style.height = `${bounds.height}px`;
+      }
+
+      function getMapPoint(event) {
+        const canvasRect = mapInstance.getCanvas().getBoundingClientRect();
+        const frameRect = mapControls.frame.getBoundingClientRect();
+        const x = Math.max(0, Math.min(canvasRect.width, event.clientX - canvasRect.left));
+        const y = Math.max(0, Math.min(canvasRect.height, event.clientY - canvasRect.top));
+        return {
+          x: x + canvasRect.left - frameRect.left - mapControls.frame.clientLeft,
+          y: y + canvasRect.top - frameRect.top - mapControls.frame.clientTop,
+          mapX: x,
+          mapY: y
+        };
+      }
+
+      function drawMapSelection(point) {
+        if (!selectionStart) {
+          return;
+        }
+        const currentX = point.x;
+        const currentY = point.y;
+        const startFrameX = selectionStart.x + selectionStart.offsetX;
+        const startFrameY = selectionStart.y + selectionStart.offsetY;
+        selectionBounds = {
+          x: Math.min(startFrameX, currentX),
+          y: Math.min(startFrameY, currentY),
+          width: Math.abs(currentX - startFrameX),
+          height: Math.abs(currentY - startFrameY),
+          sourceX: Math.min(selectionStart.mapX, point.mapX),
+          sourceY: Math.min(selectionStart.mapY, point.mapY),
+          sourceWidth: Math.abs(point.mapX - selectionStart.mapX),
+          sourceHeight: Math.abs(point.mapY - selectionStart.mapY)
+        };
+        updateSelectionRectangle(selectionBounds);
+        mapControls.captureButton.hidden = true;
+        mapControls.captureButton.disabled = true;
+      }
+
+      function loadOpenMap() {
+        const latitude = Number(mapControls.latitude.value);
+        const longitude = Number(mapControls.longitude.value);
+        const zoom = Number(mapControls.zoom.value);
+        if (mapControls.latitude.value === "" || !Number.isFinite(latitude) || latitude < -85 || latitude > 85
+          || mapControls.longitude.value === "" || !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+          || !Number.isInteger(zoom) || zoom < 14 || zoom > 19) {
+          setMapStatus("緯度は -85〜85、経度は -180〜180、縮尺は14〜19の整数で入力してください。", "error");
+          return;
+        }
+
+        if (!window.maplibregl) {
+          setMapStatus("地図ライブラリを読み込めませんでした。インターネット接続を確認するか、画像ファイルを選択してください。", "error");
+          return;
+        }
+
+        mapControls.frame.hidden = false;
+        selectionBounds = null;
+        updateSelectionRectangle(null);
+        mapControls.startButton.disabled = true;
+        mapControls.captureButton.hidden = true;
+        mapControls.captureButton.disabled = true;
+        setMapSelectionMode(false);
+
+        if (mapInstance) {
+          mapInstance.resize();
+          mapInstance.jumpTo({ center: [longitude, latitude], zoom });
+          setMapStatus("地図を移動しています…");
+          return;
+        }
+
+        setMapStatus("地図タイルを読み込んでいます…");
+        try {
+          mapInstance = new maplibregl.Map({
+            container: mapControls.container,
+            style: "https://tiles.openfreemap.org/styles/positron",
+            center: [longitude, latitude],
+            zoom,
+            minZoom: 14,
+            maxZoom: 19,
+            preserveDrawingBuffer: true
+          });
+          mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+          mapInstance.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
+          mapInstance.once("load", () => {
+            mapLoaded = true;
+            mapControls.startButton.disabled = false;
+            mapInstance.resize();
+            setMapStatus("地図を表示しました。地図をドラッグ・ホイールで調整してから範囲を選択してください。", "success");
+          });
+          mapInstance.on("error", (event) => {
+            if (!mapLoaded && event.error) {
+              setMapStatus("地図を読み込めませんでした。時間をおいて再試行するか、利用できる画像を選択してください。", "error");
+            }
+          });
+        } catch (error) {
+          mapInstance = null;
+          setMapStatus("地図を開始できませんでした。座標とインターネット接続を確認してください。", "error");
+        }
+      }
+
+      function captureSelectedMap() {
+        if (!mapLoaded || !selectionBounds || selectionBounds.width < 80 || selectionBounds.height < 60) {
+          setMapStatus("縦80×横60ピクセル以上の範囲を選択してください。", "error");
+          return;
+        }
+
+        const source = mapInstance.getCanvas();
+        const sourceRect = source.getBoundingClientRect();
+        const scaleX = source.width / sourceRect.width;
+        const scaleY = source.height / sourceRect.height;
+        const sourceX = Math.round(selectionBounds.sourceX * scaleX);
+        const sourceY = Math.round(selectionBounds.sourceY * scaleY);
+        const sourceWidth = Math.round(selectionBounds.sourceWidth * scaleX);
+        const sourceHeight = Math.round(selectionBounds.sourceHeight * scaleY);
+        const pixelRatio = source.width / sourceRect.width;
+        const attributionHeight = Math.round(46 * pixelRatio);
+        const result = document.createElement("canvas");
+        result.width = sourceWidth;
+        result.height = sourceHeight + attributionHeight;
+        const context = result.getContext("2d");
+        if (!context) {
+          setMapStatus("画像を作成できませんでした。ブラウザーを確認してください。", "error");
+          return;
+        }
+
+        try {
+          context.drawImage(source, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+          context.fillStyle = "#fff";
+          context.fillRect(0, sourceHeight, result.width, attributionHeight);
+          context.fillStyle = "#222";
+          context.font = `${Math.max(10, Math.round(10 * pixelRatio))}px Arial, sans-serif`;
+          context.textBaseline = "top";
+          context.fillText("© OpenFreeMap | © OpenMapTiles | Data © OpenStreetMap contributors", Math.round(6 * pixelRatio), sourceHeight + Math.round(5 * pixelRatio));
+          context.fillText("ODbL 1.0: openstreetmap.org/copyright", Math.round(6 * pixelRatio), sourceHeight + Math.round(23 * pixelRatio));
+          result.toBlob((blob) => {
+            if (!blob) {
+              setMapStatus("地図画像を書き出せませんでした。もう一度お試しください。", "error");
+              return;
+            }
+            const file = new File([blob], "openfreemap-location-map.png", { type: "image/png" });
+            displayImageFile(mapSlot, file, "OpenFreeMapの地図");
+            setMapStatus("出典表示付きで現場位置図に取り込みました。", "success");
+          }, "image/png");
+        } catch (error) {
+          setMapStatus("地図画像を取り込めませんでした。ブラウザーの地図画像利用条件または通信状況を確認してください。", "error");
+        }
+      }
+
+      mapControls.loadButton.addEventListener("click", loadOpenMap);
+      mapControls.startButton.addEventListener("click", () => {
+        selectionBounds = null;
+        selectionStart = null;
+        updateSelectionRectangle(null);
+        mapControls.captureButton.hidden = true;
+        mapControls.captureButton.disabled = true;
+        setMapSelectionMode(true);
+        setMapStatus("地図上をドラッグして、位置図にする範囲を選んでください。");
+      });
+      mapControls.cancelButton.addEventListener("click", () => {
+        selectionStart = null;
+        selectionBounds = null;
+        updateSelectionRectangle(null);
+        mapControls.captureButton.hidden = true;
+        mapControls.captureButton.disabled = true;
+        setMapSelectionMode(false);
+        setMapStatus("範囲選択をやめました。");
+      });
+      mapControls.captureButton.addEventListener("click", captureSelectedMap);
+
+      mapControls.container.addEventListener("pointerdown", (event) => {
+        if (!selectingMapArea || !event.target.closest(".maplibregl-canvas")) {
+          return;
+        }
+        event.preventDefault();
+        const point = getMapPoint(event);
+        const frameRect = mapControls.frame.getBoundingClientRect();
+        const canvasRect = mapInstance.getCanvas().getBoundingClientRect();
+        selectionStart = {
+          ...point,
+          offsetX: canvasRect.left - frameRect.left - mapControls.frame.clientLeft,
+          offsetY: canvasRect.top - frameRect.top - mapControls.frame.clientTop
+        };
+        mapControls.container.setPointerCapture(event.pointerId);
+        drawMapSelection(point);
+      });
+      mapControls.container.addEventListener("pointermove", (event) => {
+        if (selectingMapArea && selectionStart) {
+          drawMapSelection(getMapPoint(event));
+        }
+      });
+      mapControls.container.addEventListener("pointerup", (event) => {
+        if (!selectingMapArea || !selectionStart) {
+          return;
+        }
+        drawMapSelection(getMapPoint(event));
+        selectionStart = null;
+        const isLargeEnough = selectionBounds.width >= 80 && selectionBounds.height >= 60;
+        mapControls.captureButton.hidden = !isLargeEnough;
+        mapControls.captureButton.disabled = !isLargeEnough;
+        setMapSelectionMode(false);
+        setMapStatus(isLargeEnough
+          ? "選択範囲を確認し、「選んだ範囲を位置図に取り込む」を押してください。"
+          : "選択範囲が小さすぎます。縦80×横60ピクセル以上で選び直してください。", isLargeEnough ? "success" : "error");
+      });
+      mapControls.container.addEventListener("pointercancel", () => {
+        if (selectingMapArea) {
+          selectionStart = null;
+          selectionBounds = null;
+          updateSelectionRectangle(null);
+          mapControls.captureButton.hidden = true;
+          setMapSelectionMode(false);
+          setMapStatus("範囲の選択が中断されました。もう一度選択してください。", "error");
+        }
+      });
 
       inputs.forEach((input, name) => {
         input.addEventListener("input", () => {
