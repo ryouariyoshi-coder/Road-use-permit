@@ -486,6 +486,172 @@
       color: inherit;
     }
 
+    .attachments-section {
+      margin-top: 28px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 8px 28px rgb(34 55 46 / 5%);
+    }
+
+    .attachments-intro {
+      margin: 0;
+      padding: 18px 22px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .attachments-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      padding: 18px 22px 22px;
+    }
+
+    .attachment-card {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fcfdfc;
+    }
+
+    .attachment-card h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .attachment-description {
+      min-height: 38px;
+      margin: 6px 0 12px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border: 1px solid #176b53;
+      border-radius: 7px;
+      background: #176b53;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .map-link:hover {
+      background: #125640;
+    }
+
+    .map-link[aria-disabled="true"] {
+      border-color: #cbd4cf;
+      background: #edf1ee;
+      color: #7a8580;
+      pointer-events: none;
+    }
+
+    .image-frame {
+      display: grid;
+      min-height: 180px;
+      aspect-ratio: 4 / 3;
+      place-items: center;
+      overflow: hidden;
+      border: 1px dashed #cbd6d0;
+      border-radius: 8px;
+      background: #f3f6f4;
+    }
+
+    .image-placeholder {
+      padding: 18px;
+      color: #83908a;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .image-preview {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 180px;
+      object-fit: contain;
+      background: #f3f6f4;
+    }
+
+    .image-preview[hidden],
+    .image-placeholder[hidden] {
+      display: none;
+    }
+
+    .attachment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .attachment-button {
+      display: inline-flex;
+      min-height: 36px;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 11px;
+      border: 1px solid #cbd6d0;
+      border-radius: 7px;
+      background: #fff;
+      color: #35463f;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .attachment-button:hover {
+      border-color: #77a18f;
+      background: #f5faf7;
+    }
+
+    .attachment-button[hidden] {
+      display: none;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+
+    .file-input:focus-visible + .attachment-button {
+      outline: 3px solid rgb(71 148 119 / 35%);
+      outline-offset: 2px;
+    }
+
+    .image-status {
+      min-height: 2.8em;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .image-status[data-state="error"] {
+      color: #a23c30;
+    }
+
+    .image-status[data-state="success"] {
+      color: var(--green);
+    }
+
     footer {
       margin-top: 24px;
       color: var(--muted);
@@ -506,6 +672,14 @@
 
       .preview-panel {
         position: static;
+      }
+
+      .attachments-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .attachment-card:first-child {
+        grid-column: 1 / -1;
       }
     }
 
@@ -534,6 +708,15 @@
 
       .paper {
         padding: 5.8% 9.5% 4.5% 11.9%;
+      }
+
+      .attachments-grid {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .attachment-card:first-child {
+        grid-column: auto;
       }
 
       .form-table th,
@@ -566,6 +749,7 @@
       .notice,
       .editor,
       .preview-heading,
+      .attachments-section,
       footer {
         display: none !important;
       }
@@ -802,6 +986,62 @@
       </section>
     </div>
 
+    <section class="attachments-section" aria-labelledby="attachments-title">
+      <div class="panel-heading">
+        <h2 id="attachments-title">現場地図・写真台帳</h2>
+        <span class="step">STEP 2 / 5</span>
+      </div>
+      <p class="attachments-intro">住所から地図を別画面で開き、利用条件を確認した画像、またはご自身が利用できる画像を選んでください。このツールは外部サービスから画像を自動取得しません。</p>
+      <div class="attachments-grid">
+        <article class="attachment-card" data-image-slot="map">
+          <h3>現場位置図</h3>
+          <p class="attachment-description">入力した現場住所を地図サービスで開き、確認済みの位置図画像を取り込みます。</p>
+          <a class="map-link" data-map-link aria-disabled="true" tabindex="-1" target="_blank" rel="noopener noreferrer">Google マップで現場を開く</a>
+          <div class="image-frame">
+            <p class="image-placeholder" data-image-empty>地図画像はまだ選択されていません。</p>
+            <img class="image-preview" data-image-preview alt="取り込んだ現場位置図" hidden>
+          </div>
+          <div class="attachment-actions">
+            <input class="file-input" id="map-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <label class="attachment-button" for="map-image-input">地図画像を選択</label>
+            <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+          </div>
+          <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
+        </article>
+
+        <article class="attachment-card" data-image-slot="left">
+          <h3>写真台帳・左方向</h3>
+          <p class="attachment-description">道路の左方向を撮影した全景写真を取り込みます。</p>
+          <div class="image-frame">
+            <p class="image-placeholder" data-image-empty>左方向の写真はまだ選択されていません。</p>
+            <img class="image-preview" data-image-preview alt="左方向の道路全景写真" hidden>
+          </div>
+          <div class="attachment-actions">
+            <input class="file-input" id="left-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <label class="attachment-button" for="left-image-input">左方向の写真を選択</label>
+            <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+          </div>
+          <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
+        </article>
+
+        <article class="attachment-card" data-image-slot="right">
+          <h3>写真台帳・右方向</h3>
+          <p class="attachment-description">道路の右方向を撮影した全景写真を取り込みます。</p>
+          <div class="image-frame">
+            <p class="image-placeholder" data-image-empty>右方向の写真はまだ選択されていません。</p>
+            <img class="image-preview" data-image-preview alt="右方向の道路全景写真" hidden>
+          </div>
+          <div class="attachment-actions">
+            <input class="file-input" id="right-image-input" data-image-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <label class="attachment-button" for="right-image-input">右方向の写真を選択</label>
+            <button class="attachment-button" type="button" data-remove-image hidden>画像を削除</button>
+          </div>
+          <p class="image-status" data-image-status role="status" aria-live="polite">画像はまだ選択されていません。</p>
+        </article>
+      </div>
+      <p class="attachments-intro">画像は1枚あたり10MB・2,000万画素までです。現在はこのページ内での一時表示のみで、再読み込みやページを閉じると消去されます。</p>
+    </section>
+
     <footer>申請書の最新様式・提出条件は、提出先の警察署でご確認ください。</footer>
   </main>
 
@@ -811,6 +1051,19 @@
         [...document.querySelectorAll("[data-input]")].map((element) => [element.dataset.input, element])
       );
       const previews = [...document.querySelectorAll("[data-preview]")];
+      const locationInput = inputs.get("location");
+      const mapLink = document.querySelector("[data-map-link]");
+      const maxImageBytes = 10 * 1024 * 1024;
+      const maxImagePixels = 20_000_000;
+      const imageSlots = [...document.querySelectorAll("[data-image-slot]")].map((card) => ({
+        input: card.querySelector("[data-image-input]"),
+        image: card.querySelector("[data-image-preview]"),
+        empty: card.querySelector("[data-image-empty]"),
+        status: card.querySelector("[data-image-status]"),
+        removeButton: card.querySelector("[data-remove-image]"),
+        objectUrl: null,
+        requestId: 0
+      }));
 
       function updatePreviews(name, value) {
         previews
@@ -822,8 +1075,111 @@
           });
       }
 
+      function updateMapLink(address) {
+        if (!address.trim()) {
+          mapLink.removeAttribute("href");
+          mapLink.setAttribute("aria-disabled", "true");
+          mapLink.setAttribute("tabindex", "-1");
+          return;
+        }
+
+        const url = new URL("https://www.google.com/maps/search/");
+        url.searchParams.set("api", "1");
+        url.searchParams.set("query", address.trim());
+        mapLink.href = url.toString();
+        mapLink.setAttribute("aria-disabled", "false");
+        mapLink.removeAttribute("tabindex");
+      }
+
+      function setImageStatus(slot, message, state) {
+        slot.status.textContent = message;
+        if (state) {
+          slot.status.dataset.state = state;
+        } else {
+          delete slot.status.dataset.state;
+        }
+      }
+
+      function removeImage(slot) {
+        slot.requestId += 1;
+        if (slot.objectUrl) {
+          URL.revokeObjectURL(slot.objectUrl);
+          slot.objectUrl = null;
+        }
+        slot.image.removeAttribute("src");
+        slot.image.hidden = true;
+        slot.empty.hidden = false;
+        slot.removeButton.hidden = true;
+      }
+
+      function attachImageHandlers(slot) {
+        slot.input.addEventListener("change", () => {
+          const file = slot.input.files && slot.input.files[0];
+          slot.input.value = "";
+          if (!file) {
+            return;
+          }
+
+          const requestId = slot.requestId + 1;
+          slot.requestId = requestId;
+          if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+            setImageStatus(slot, "JPEG、PNG、WebP、GIF形式の画像を選んでください。現在の画像はそのままです。", "error");
+            return;
+          }
+          if (file.size > maxImageBytes) {
+            setImageStatus(slot, "画像の上限（10MB）を超えています。サイズを小さくして再度選んでください。現在の画像はそのままです。", "error");
+            return;
+          }
+
+          const nextUrl = URL.createObjectURL(file);
+          const probe = new Image();
+
+          probe.onload = () => {
+            if (requestId !== slot.requestId) {
+              URL.revokeObjectURL(nextUrl);
+              return;
+            }
+            if (probe.naturalWidth * probe.naturalHeight > maxImagePixels) {
+              URL.revokeObjectURL(nextUrl);
+              setImageStatus(slot, "画像の解像度が上限（2,000万画素）を超えています。縮小して再度選んでください。現在の画像はそのままです。", "error");
+              return;
+            }
+
+            if (slot.objectUrl) {
+              URL.revokeObjectURL(slot.objectUrl);
+            }
+            slot.objectUrl = nextUrl;
+            slot.image.src = nextUrl;
+            slot.image.hidden = false;
+            slot.empty.hidden = true;
+            slot.removeButton.hidden = false;
+            setImageStatus(slot, `${file.name} を表示しています。再読み込みすると消去されます。`, "success");
+          };
+
+          probe.onerror = () => {
+            URL.revokeObjectURL(nextUrl);
+            if (requestId === slot.requestId) {
+              setImageStatus(slot, "画像を読み込めませんでした。別の画像を選んでください。現在の画像はそのままです。", "error");
+            }
+          };
+
+          probe.src = nextUrl;
+          setImageStatus(slot, "画像を確認しています…");
+        });
+
+        slot.removeButton.addEventListener("click", () => {
+          removeImage(slot);
+          setImageStatus(slot, "画像を削除しました。");
+        });
+      }
+
       inputs.forEach((input, name) => {
-        input.addEventListener("input", () => updatePreviews(name, input.value));
+        input.addEventListener("input", () => {
+          updatePreviews(name, input.value);
+          if (name === "location") {
+            updateMapLink(input.value);
+          }
+        });
       });
 
       previews.forEach((preview) => {
@@ -833,6 +1189,9 @@
           const input = inputs.get(name);
           if (input && input.value !== value) {
             input.value = value;
+          }
+          if (name === "location") {
+            updateMapLink(value);
           }
           previews
             .filter((element) => element.dataset.preview === name && element !== preview)
@@ -848,6 +1207,9 @@
           }
         });
       });
+
+      imageSlots.forEach(attachImageHandlers);
+      updateMapLink(locationInput.value);
     })();
   </script>
 </body>
