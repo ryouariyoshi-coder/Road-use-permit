@@ -1481,13 +1481,16 @@
           geocodedPlaces.forEach((place, index) => {
             const option = document.createElement("option");
             option.value = String(index);
-            option.textContent = getPlaceLabel(place.properties || {}) || `検索候補 ${index + 1}`;
+            const resultLabel = getPlaceLabel(place.properties || {}) || `検索候補 ${index + 1}`;
+            option.textContent = index === 0
+              ? `入力住所「${address}」の検索結果：${resultLabel}`
+              : `検索候補 ${index + 1}：${resultLabel}`;
             mapControls.resultSelect.append(option);
           });
           mapControls.resultSelect.hidden = false;
           mapControls.resultSelect.disabled = false;
           mapControls.showAddressButton.hidden = false;
-          setMapStatus("検索結果から現場の場所を選んでください。");
+          setMapStatus("入力住所を含む候補から場所を選び、地図上で現場と一致するか確認してください。住所検索結果が正確とは限りません。", "success");
         } catch (error) {
           setMapStatus("住所を検索できませんでした。インターネット接続を確認して、もう一度お試しください。", "error");
         } finally {
