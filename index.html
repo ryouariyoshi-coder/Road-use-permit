@@ -856,9 +856,28 @@
     }
 
     .diagram-vehicle-legend li {
+      display: block;
+    }
+
+    .diagram-vehicle-tool {
       display: grid;
+      width: 100%;
       grid-template-columns: 92px minmax(0, 1fr);
+      align-items: center;
       gap: 8px;
+      padding: 2px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .diagram-vehicle-tool[aria-pressed="true"] {
+      border-color: #176b53;
+      background: #e9f4f0;
     }
 
     .diagram-legend-mark {
@@ -1135,7 +1154,9 @@
 
     .diagram-canvas-wrap[data-mode="draw-zone"] .diagram-canvas,
     .diagram-canvas-wrap[data-mode="draw-staff"] .diagram-canvas,
-    .diagram-canvas-wrap[data-mode="draw-target"] .diagram-canvas {
+    .diagram-canvas-wrap[data-mode="draw-target"] .diagram-canvas,
+    .diagram-canvas-wrap[data-mode="draw-vehicle-high-lift"] .diagram-canvas,
+    .diagram-canvas-wrap[data-mode="draw-vehicle-crane"] .diagram-canvas {
       cursor: crosshair;
     }
 
@@ -1852,7 +1873,7 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。各ボタンの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。凡例の高所作業車・揚重車アイコンもクリックして配置できます。各ツールの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
             <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
@@ -1921,27 +1942,31 @@
           </ul>
           <ul class="diagram-vehicle-legend" aria-label="作業車両のアイコン">
             <li>
-              <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
-                <path d="M3 3h42v18H3zM14 3v18M5 6h6v12H5z"></path>
-                <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
-                <circle cx="21" cy="12" r="3.5"></circle>
-                <path d="M21 10h16v4H21zM29 10v4"></path>
-                <ellipse cx="40" cy="12" rx="4" ry="6"></ellipse>
-                <path d="M40 8v8"></path>
-              </svg>
-              <span>作業車両（高所作業車）</span>
+              <button class="diagram-vehicle-tool" type="button" data-toggle-vehicle-drawing="vehicle-high-lift" aria-pressed="false">
+                <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
+                  <path d="M3 3h42v18H3zM14 3v18M5 6h6v12H5z"></path>
+                  <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
+                  <circle cx="21" cy="12" r="3.5"></circle>
+                  <path d="M21 10h16v4H21zM29 10v4"></path>
+                  <ellipse cx="40" cy="12" rx="4" ry="6"></ellipse>
+                  <path d="M40 8v8"></path>
+                </svg>
+                <span data-vehicle-high-lift-label>作業車両（高所作業車）</span>
+              </button>
             </li>
             <li>
-              <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
-                <path d="M3 3h42v18H3zM14 3v18M5 6h6v12H5z"></path>
-                <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
-                <path d="M16 3v18M18 5h25v14H18z"></path>
-                <circle cx="20" cy="12" r="3"></circle>
-                <path d="M20 10h22v4H20zM27 10v4M34 10v4"></path>
-                <path d="M42 12v4l2 1"></path>
-                <circle cx="45" cy="17" r="1.5"></circle>
-              </svg>
-              <span>作業車両（揚重車）</span>
+              <button class="diagram-vehicle-tool" type="button" data-toggle-vehicle-drawing="vehicle-crane" aria-pressed="false">
+                <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
+                  <path d="M3 3h42v18H3zM14 3v18M5 6h6v12H5z"></path>
+                  <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
+                  <path d="M16 3v18M18 5h25v14H18z"></path>
+                  <circle cx="20" cy="12" r="3"></circle>
+                  <path d="M20 10h22v4H20zM27 10v4M34 10v4"></path>
+                  <path d="M42 12v4l2 1"></path>
+                  <circle cx="45" cy="17" r="1.5"></circle>
+                </svg>
+                <span data-vehicle-crane-label>作業車両（揚重車）</span>
+              </button>
             </li>
           </ul>
         </div>
@@ -2034,6 +2059,10 @@
         staffToolLabel: document.querySelector("[data-staff-tool-label]"),
         targetToolButton: document.querySelector("[data-toggle-target-drawing]"),
         targetToolLabel: document.querySelector("[data-target-tool-label]"),
+        highLiftToolButton: document.querySelector('[data-toggle-vehicle-drawing="vehicle-high-lift"]'),
+        highLiftToolLabel: document.querySelector("[data-vehicle-high-lift-label]"),
+        craneToolButton: document.querySelector('[data-toggle-vehicle-drawing="vehicle-crane"]'),
+        craneToolLabel: document.querySelector("[data-vehicle-crane-label]"),
         printButton: document.querySelector("[data-print-work-diagram]"),
         captureButton: document.querySelector("[data-capture-diagram-screen]"),
         captureDialog: document.querySelector("[data-diagram-capture-dialog]"),
@@ -2849,7 +2878,9 @@
         const tools = {
           zone: { button: diagramControls.zoneToolButton, label: diagramControls.zoneToolLabel, activeLabel: "区画を完成", idleLabel: "区画を描く" },
           staff: { button: diagramControls.staffToolButton, label: diagramControls.staffToolLabel, activeLabel: "誘導員配置を完成", idleLabel: "交通誘導員を描く" },
-          target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象を完成", idleLabel: "作業対象を描く" }
+          target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象を完成", idleLabel: "作業対象を描く" },
+          "vehicle-high-lift": { button: diagramControls.highLiftToolButton, label: diagramControls.highLiftToolLabel, activeLabel: "高所作業車の配置を完成", idleLabel: "作業車両（高所作業車）" },
+          "vehicle-crane": { button: diagramControls.craneToolButton, label: diagramControls.craneToolLabel, activeLabel: "揚重車の配置を完成", idleLabel: "作業車両（揚重車）" }
         };
         const tool = tools[type];
         tool.button.setAttribute("aria-pressed", String(active));
@@ -2866,6 +2897,8 @@
         setDiagramDrawingToolActive("zone", false);
         setDiagramDrawingToolActive("staff", false);
         setDiagramDrawingToolActive("target", false);
+        setDiagramDrawingToolActive("vehicle-high-lift", false);
+        setDiagramDrawingToolActive("vehicle-crane", false);
         drawWorkDiagram();
         const hasDrawnItems = drawing.type === "zone" ? Boolean(drawing.lastPoint) : drawing.count > 0;
         const messages = {
@@ -2880,6 +2913,14 @@
           target: {
             complete: "作業対象の描画を終了しました。アイコンをクリックして選択し、長さ・太さ・向きを調整できます。削除ボタンまたはDeleteキーで個別に削除できます。",
             cancel: "作業対象の描画をキャンセルしました。"
+          },
+          "vehicle-high-lift": {
+            complete: "高所作業車の描画を終了しました。車両を選択し、枠のハンドルで長さ・太さ・向きを調整できます。削除ボタンまたはDeleteキーで個別に削除できます。",
+            cancel: "高所作業車の描画をキャンセルしました。"
+          },
+          "vehicle-crane": {
+            complete: "揚重車の描画を終了しました。車両を選択し、枠のハンドルで長さ・太さ・向きを調整できます。削除ボタンまたはDeleteキーで個別に削除できます。",
+            cancel: "揚重車の描画をキャンセルしました。"
           }
         };
         setDiagramStatus(
@@ -2897,7 +2938,14 @@
           finishDiagramDrawing();
         }
         if (!diagramState.background) {
-          const itemName = type === "zone" ? "区画" : (type === "staff" ? "交通誘導員" : "作業対象");
+          const itemNames = {
+            zone: "区画",
+            staff: "交通誘導員",
+            target: "作業対象",
+            "vehicle-high-lift": "高所作業車",
+            "vehicle-crane": "揚重車"
+          };
+          const itemName = itemNames[type];
           setDiagramStatus(`${itemName}を描く前に背景画像を選択してください。`, "error");
           return;
         }
@@ -2912,7 +2960,9 @@
         const instructions = {
           zone: "作図枠をクリックして赤丸を置き、次の場所をクリックしてバーをつなぎます。Escキーまたは「区画を完成」で終了します。",
           staff: "作図枠をクリックするたびに青丸の交通誘導員を配置します。Escキーまたは「誘導員配置を完成」で終了します。",
-          target: "作図枠をクリックするたびに作業対象アイコンを配置します。Escキーまたは「作業対象を完成」で終了します。"
+          target: "作図枠をクリックするたびに作業対象アイコンを配置します。Escキーまたは「作業対象を完成」で終了します。",
+          "vehicle-high-lift": "作図枠をクリックするたびに高所作業車を配置します。アイコンの再クリックまたはEscキーで終了します。",
+          "vehicle-crane": "作図枠をクリックするたびに揚重車を配置します。アイコンの再クリックまたはEscキーで終了します。"
         };
         setDiagramStatus(instructions[type]);
       }
@@ -2967,19 +3017,25 @@
           drawing.count += 1;
           setDiagramStatus("青丸の交通誘導員を配置しました。続けてクリックするか、Escキーで終了してください。");
         } else {
+          const itemDefinitions = {
+            target: { type: "work-target", label: "作業対象", lengthMm: 1500, widthMm: 300 },
+            "vehicle-high-lift": { type: "vehicle-high-lift", label: "作業車両（高所作業車）", lengthMm: 4500, widthMm: 1800 },
+            "vehicle-crane": { type: "vehicle-crane", label: "作業車両（揚重車）", lengthMm: 4500, widthMm: 1800 }
+          };
+          const itemDefinition = itemDefinitions[drawing.type];
           diagramState.items.push({
             id: diagramState.nextItemId,
-            type: "work-target",
-            label: "作業対象",
+            type: itemDefinition.type,
+            label: itemDefinition.label,
             x: point.x,
             y: point.y,
-            lengthMm: 1500,
-            widthMm: 300,
+            lengthMm: itemDefinition.lengthMm,
+            widthMm: itemDefinition.widthMm,
             rotation: 0
           });
           diagramState.nextItemId += 1;
           drawing.count += 1;
-          setDiagramStatus("作業対象アイコンを配置しました。続けてクリックするか、Escキーで終了してください。");
+          setDiagramStatus(`${itemDefinition.label}を配置しました。続けてクリックするか、Escキーで終了してください。`);
         }
         drawWorkDiagram();
       }
@@ -3019,6 +3075,12 @@
         ];
       }
 
+      function isDiagramDirectManipulationItem(item) {
+        return item.type === "work-target"
+          || item.type === "vehicle-high-lift"
+          || item.type === "vehicle-crane";
+      }
+
       function drawDiagramArrow(context, x, y, direction) {
         context.beginPath();
         context.moveTo(x, y);
@@ -3026,6 +3088,65 @@
         context.lineTo(x + direction * 10, y + 5);
         context.closePath();
         context.fill();
+      }
+
+      function drawDiagramVehicle(context, type, dimensions) {
+        const x = (value) => (value - 24) * dimensions.length / 48;
+        const y = (value) => (value - 12) * dimensions.width / 24;
+        const drawRect = (left, top, right, bottom) => {
+          const rectX = x(left);
+          const rectY = y(top);
+          const rectWidth = x(right) - rectX;
+          const rectHeight = y(bottom) - rectY;
+          context.fillRect(rectX, rectY, rectWidth, rectHeight);
+          context.strokeRect(rectX, rectY, rectWidth, rectHeight);
+        };
+        const drawLine = (...coordinates) => {
+          context.beginPath();
+          context.moveTo(x(coordinates[0]), y(coordinates[1]));
+          for (let index = 2; index < coordinates.length; index += 2) {
+            context.lineTo(x(coordinates[index]), y(coordinates[index + 1]));
+          }
+          context.stroke();
+        };
+        const drawCircle = (centerX, centerY, radius) => {
+          context.beginPath();
+          context.arc(x(centerX), y(centerY), radius * Math.min(dimensions.length / 48, dimensions.width / 24), 0, Math.PI * 2);
+          context.fill();
+          context.stroke();
+        };
+
+        context.fillStyle = "#fff";
+        context.strokeStyle = "#111";
+        context.lineWidth = Math.max(1.2, Math.min(dimensions.length / 48, dimensions.width / 24) * 1.2);
+        drawRect(3, 3, 45, 21);
+        drawRect(5, 6, 11, 18);
+        drawLine(14, 3, 14, 21);
+        context.fillStyle = "#111";
+        [[10, 3, 14, 5], [10, 19, 14, 21], [38, 3, 42, 5], [38, 19, 42, 21]]
+          .forEach(([left, top, right, bottom]) => {
+            context.fillRect(x(left), y(top), x(right) - x(left), y(bottom) - y(top));
+          });
+        context.fillStyle = "#fff";
+
+        if (type === "vehicle-high-lift") {
+          drawCircle(21, 12, 3.5);
+          drawRect(21, 10, 37, 14);
+          drawLine(29, 10, 29, 14);
+          context.beginPath();
+          context.ellipse(x(40), y(12), Math.abs(x(44) - x(40)), Math.abs(y(18) - y(12)), 0, 0, Math.PI * 2);
+          context.fill();
+          context.stroke();
+          drawLine(40, 8, 40, 16);
+        } else {
+          drawLine(16, 3, 16, 21);
+          drawRect(18, 5, 43, 19);
+          drawCircle(20, 12, 3);
+          drawRect(20, 10, 42, 14);
+          drawLine(27, 10, 27, 14, 34, 14, 34, 10);
+          drawLine(42, 12, 42, 16, 44, 17);
+          drawCircle(45, 17, 1.5);
+        }
       }
 
       function drawDiagramItem(item) {
@@ -3066,6 +3187,8 @@
         } else if (item.type === "work-target") {
           context.fillStyle = "#e12e37";
           context.fillRect(-halfLength, -halfWidth, dimensions.length, dimensions.width);
+        } else if (item.type === "vehicle-high-lift" || item.type === "vehicle-crane") {
+          drawDiagramVehicle(context, item.type, dimensions);
         } else if (item.type === "cone") {
           context.fillStyle = "#e66b25";
           context.strokeStyle = "#7a3514";
@@ -3107,7 +3230,7 @@
           context.fillRect(halfLength * 0.06, -halfWidth * 0.72, halfLength * 0.34, halfWidth * 1.44);
         }
 
-        if (!item.type.startsWith("zone-") && item.type !== "traffic-guide" && item.type !== "work-target") {
+        if (!item.type.startsWith("zone-") && item.type !== "traffic-guide" && !isDiagramDirectManipulationItem(item)) {
           context.fillStyle = "#14251f";
           context.strokeStyle = "#fff";
           context.lineWidth = Math.max(1, 10 * getDiagramScale());
@@ -3136,7 +3259,7 @@
             dimensions.length + selectionPadding * 2,
             dimensions.width + selectionPadding * 2
           );
-          if (item.type === "work-target") {
+          if (isDiagramDirectManipulationItem(item)) {
             const interfaceScale = getDiagramInterfaceScale();
             const handles = getDiagramTransformHandles(item, interfaceScale);
             const handleSize = 8 * interfaceScale;
@@ -3216,7 +3339,7 @@
         if (item) {
           diagramControls.itemLength.value = String(item.lengthMm);
           diagramControls.itemWidth.value = String(item.widthMm);
-          const instructions = item.type === "work-target"
+          const instructions = isDiagramDirectManipulationItem(item)
             ? "枠のハンドルで長さ・太さ・回転を直接調整できます。図形本体のドラッグで移動し、削除ボタンまたはDeleteキーで削除できます。"
             : "ドラッグで移動し、長さ・幅・向きを調整できます。削除ボタンまたはDeleteキーで削除できます。";
           setDiagramStatus(`${item.label}を選択中です。${instructions}`, "success");
@@ -3646,6 +3769,9 @@
       diagramControls.zoneToolButton.addEventListener("click", () => toggleDiagramDrawing("zone"));
       diagramControls.staffToolButton.addEventListener("click", () => toggleDiagramDrawing("staff"));
       diagramControls.targetToolButton.addEventListener("click", () => toggleDiagramDrawing("target"));
+      document.querySelectorAll("[data-toggle-vehicle-drawing]").forEach((button) => {
+        button.addEventListener("click", () => toggleDiagramDrawing(button.dataset.toggleVehicleDrawing));
+      });
       window.addEventListener("keydown", (event) => {
         if (event.key !== "Escape" || !diagramState.drawing || diagramControls.captureDialog.open) {
           return;
@@ -3716,7 +3842,7 @@
         }
 
         const selectedItem = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
-        if (selectedItem && selectedItem.type === "work-target") {
+        if (selectedItem && isDiagramDirectManipulationItem(selectedItem)) {
           const handle = findDiagramTransformHandleAt(selectedItem, point);
           if (handle) {
             event.preventDefault();
@@ -3750,7 +3876,7 @@
         }
         if (!diagramState.dragItem) {
           const selectedItem = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
-          const handle = selectedItem && selectedItem.type === "work-target"
+          const handle = selectedItem && isDiagramDirectManipulationItem(selectedItem)
             ? findDiagramTransformHandleAt(selectedItem, point)
             : null;
           diagramControls.canvas.style.cursor = handle ? handle.cursor : "";
@@ -3767,11 +3893,14 @@
       diagramControls.canvas.addEventListener("pointerup", () => {
         const transform = diagramState.transformItem;
         if (transform) {
+          const item = diagramState.items.find((candidate) => candidate.id === transform.id);
           diagramState.transformItem = null;
-          setDiagramStatus(
-            transform.type === "rotate" ? "作業対象の向きを調整しました。" : "作業対象の長さ・太さを調整しました。",
-            "success"
-          );
+          if (item) {
+            setDiagramStatus(
+              transform.type === "rotate" ? `${item.label}の向きを調整しました。` : `${item.label}の長さ・太さを調整しました。`,
+              "success"
+            );
+          }
         }
         diagramState.dragItem = null;
         diagramControls.canvas.style.cursor = "";
