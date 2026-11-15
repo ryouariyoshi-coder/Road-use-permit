@@ -948,6 +948,7 @@
     }
 
     .diagram-canvas-wrap {
+      position: relative;
       display: grid;
       width: 100%;
       height: 100%;
@@ -955,6 +956,110 @@
       place-items: center;
       overflow: hidden;
       background: #fff;
+    }
+
+    .diagram-capture-trigger {
+      position: absolute;
+      z-index: 1;
+      display: grid;
+      inset: 0;
+      align-content: center;
+      justify-items: center;
+      gap: 8px;
+      padding: 18px;
+      border: 0;
+      background: transparent;
+      color: #788780;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .diagram-capture-trigger span:first-child {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .diagram-capture-trigger span:last-child {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .diagram-capture-trigger[hidden] {
+      display: none;
+    }
+
+    .diagram-capture-dialog {
+      width: min(1000px, calc(100vw - 32px));
+      max-width: none;
+      max-height: calc(100vh - 32px);
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .diagram-capture-dialog::backdrop {
+      background: rgb(17 28 24 / 72%);
+    }
+
+    .diagram-capture-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .diagram-capture-heading h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .diagram-capture-help {
+      margin: 10px 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .diagram-capture-preview {
+      position: relative;
+      display: grid;
+      width: 100%;
+      height: min(65vh, 700px);
+      min-height: 180px;
+      place-items: center;
+      overflow: hidden;
+      background: #17201c;
+      cursor: crosshair;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .diagram-capture-video {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      pointer-events: none;
+    }
+
+    .diagram-capture-selection {
+      position: absolute;
+      z-index: 1;
+      border: 2px solid #e12e37;
+      background: rgb(225 46 55 / 12%);
+      pointer-events: none;
+    }
+
+    .diagram-capture-selection[hidden] {
+      display: none;
+    }
+
+    .diagram-capture-status {
+      min-height: 1.6em;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .diagram-canvas {
@@ -1352,6 +1457,10 @@
         box-shadow: none;
       }
 
+      body.print-work-diagram .diagram-capture-dialog {
+        display: none !important;
+      }
+
       body.print-work-diagram .diagram-legend {
         margin-top: 14mm;
         margin-bottom: 8mm;
@@ -1712,9 +1821,25 @@
         <div class="diagram-drawing-frame">
           <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
             <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
+            <button class="diagram-capture-trigger" type="button" data-capture-diagram-screen aria-label="画面共有から作業体図の背景を取り込む">
+              <span>背景画像を選択してください</span>
+              <span>ここをクリックして画面を共有し、取り込む範囲をドラッグします。</span>
+            </button>
           </div>
         </div>
       </article>
+      <dialog class="diagram-capture-dialog" data-diagram-capture-dialog aria-labelledby="diagram-capture-title">
+        <div class="diagram-capture-heading">
+          <h2 id="diagram-capture-title">作業体図の背景範囲を選択</h2>
+          <button class="attachment-button" type="button" data-cancel-diagram-capture>キャンセル</button>
+        </div>
+        <p class="diagram-capture-help">画面共有で対象のウィンドウまたは画面を選びます。共有された画面上をクリック＆ドラッグして範囲を選ぶと、背景画像として取り込みます。選んだウィンドウの画面共有をおすすめします。共有画像はこのページ内で処理され、外部へ送信されません。</p>
+        <div class="diagram-capture-preview" data-diagram-capture-preview>
+          <video class="diagram-capture-video" data-diagram-capture-video autoplay muted playsinline></video>
+          <div class="diagram-capture-selection" data-diagram-capture-selection hidden></div>
+        </div>
+        <p class="diagram-capture-status" data-diagram-capture-status role="status" aria-live="polite">共有画面上をドラッグして範囲を選択してください。</p>
+      </dialog>
     </section>
 
     <footer>申請書の最新様式・提出条件は、提出先の警察署でご確認ください。</footer>
@@ -1776,7 +1901,14 @@
         itemLength: document.querySelector("[data-diagram-item-length]"),
         itemWidth: document.querySelector("[data-diagram-item-width]"),
         deleteButton: document.querySelector("[data-delete-diagram-item]"),
-        printButton: document.querySelector("[data-print-work-diagram]")
+        printButton: document.querySelector("[data-print-work-diagram]"),
+        captureButton: document.querySelector("[data-capture-diagram-screen]"),
+        captureDialog: document.querySelector("[data-diagram-capture-dialog]"),
+        capturePreview: document.querySelector("[data-diagram-capture-preview]"),
+        captureVideo: document.querySelector("[data-diagram-capture-video]"),
+        captureSelection: document.querySelector("[data-diagram-capture-selection]"),
+        cancelCaptureButton: document.querySelector("[data-cancel-diagram-capture]"),
+        captureStatus: document.querySelector("[data-diagram-capture-status]")
       };
       const mapSlot = imageSlots.find((slot) => slot.image.alt === "取り込んだ現場位置図");
       let mapInstance = null;
@@ -1794,6 +1926,11 @@
         pixelsPerMm: null,
         dragItem: null,
         nextItemId: 1
+      };
+      const diagramCaptureState = {
+        stream: null,
+        selectionStart: null,
+        starting: false
       };
       const storageDatabaseName = "road-use-permit-projects";
       const storageStoreName = "projects";
@@ -1983,6 +2120,7 @@
           diagramState.backgroundUrl = null;
         }
         diagramState.background = null;
+        diagramControls.captureButton.hidden = false;
         diagramState.items = record.diagram.items || [];
         diagramState.selectedId = null;
         diagramState.calibrationMode = false;
@@ -2096,6 +2234,7 @@
         }
         diagramState.background = null;
         diagramState.backgroundUrl = null;
+        diagramControls.captureButton.hidden = false;
         diagramState.items = [];
         diagramState.selectedId = null;
         diagramState.calibrationMode = false;
@@ -2675,11 +2814,6 @@
         diagramContext.fillRect(0, 0, canvas.width, canvas.height);
         if (diagramState.background) {
           diagramContext.drawImage(diagramState.background, 0, 0, canvas.width, canvas.height);
-        } else {
-          diagramContext.fillStyle = "#788780";
-          diagramContext.font = "24px sans-serif";
-          diagramContext.textAlign = "center";
-          diagramContext.fillText("背景画像を選択してください", canvas.width / 2, canvas.height / 2);
         }
 
         diagramState.items.forEach(drawDiagramItem);
@@ -2734,6 +2868,156 @@
         return null;
       }
 
+      function stopDiagramScreenShare() {
+        const stream = diagramCaptureState.stream;
+        diagramCaptureState.stream = null;
+        diagramCaptureState.selectionStart = null;
+        diagramControls.captureVideo.pause();
+        diagramControls.captureVideo.srcObject = null;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+        diagramControls.captureSelection.hidden = true;
+        if (diagramControls.captureDialog.open) {
+          diagramControls.captureDialog.close();
+        }
+      }
+
+      function getCapturePoint(event) {
+        const rect = diagramControls.captureVideo.getBoundingClientRect();
+        return {
+          x: Math.min(rect.right, Math.max(rect.left, event.clientX)),
+          y: Math.min(rect.bottom, Math.max(rect.top, event.clientY))
+        };
+      }
+
+      function drawCaptureSelection(start, end) {
+        const previewRect = diagramControls.capturePreview.getBoundingClientRect();
+        diagramControls.captureSelection.style.left = `${Math.min(start.x, end.x) - previewRect.left}px`;
+        diagramControls.captureSelection.style.top = `${Math.min(start.y, end.y) - previewRect.top}px`;
+        diagramControls.captureSelection.style.width = `${Math.abs(end.x - start.x)}px`;
+        diagramControls.captureSelection.style.height = `${Math.abs(end.y - start.y)}px`;
+        diagramControls.captureSelection.hidden = false;
+      }
+
+      async function createCapturedBackgroundFile(rect) {
+        const video = diagramControls.captureVideo;
+        const videoRect = video.getBoundingClientRect();
+        const sourceLeft = Math.max(0, Math.floor((rect.left - videoRect.left) * video.videoWidth / videoRect.width));
+        const sourceTop = Math.max(0, Math.floor((rect.top - videoRect.top) * video.videoHeight / videoRect.height));
+        const sourceRight = Math.min(video.videoWidth, Math.ceil((rect.right - videoRect.left) * video.videoWidth / videoRect.width));
+        const sourceBottom = Math.min(video.videoHeight, Math.ceil((rect.bottom - videoRect.top) * video.videoHeight / videoRect.height));
+        const sourceWidth = sourceRight - sourceLeft;
+        const sourceHeight = sourceBottom - sourceTop;
+        if (sourceWidth < 10 || sourceHeight < 10) {
+          throw new Error("幅と高さが10ピクセル以上になるように範囲を選択してください。");
+        }
+
+        const resize = Math.min(1, Math.sqrt(maxImagePixels / (sourceWidth * sourceHeight)));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.floor(sourceWidth * resize));
+        canvas.height = Math.max(1, Math.floor(sourceHeight * resize));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("選択範囲を画像に変換できませんでした。");
+        }
+        context.drawImage(video, sourceLeft, sourceTop, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+
+        let blob = null;
+        for (const quality of [0.92, 0.82, 0.7]) {
+          blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+          if (!blob) {
+            throw new Error("選択範囲を画像に変換できませんでした。");
+          }
+          if (blob.size <= maxImageBytes) {
+            break;
+          }
+        }
+        if (!blob || blob.size > maxImageBytes) {
+          throw new Error("選択範囲が大きすぎます。範囲を小さくして選び直してください。");
+        }
+        return new File([blob], `作業体図画面_${Date.now()}.jpg`, { type: blob.type });
+      }
+
+      async function startDiagramScreenCapture() {
+        if (diagramCaptureState.starting || diagramCaptureState.stream) {
+          return;
+        }
+        if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== "function") {
+          setDiagramStatus("このブラウザーでは画面共有を利用できません。背景画像を選択してください。", "error");
+          return;
+        }
+
+        diagramCaptureState.starting = true;
+        diagramControls.captureButton.disabled = true;
+        setDiagramStatus("共有する画面またはウィンドウを選んでください。");
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+          diagramCaptureState.stream = stream;
+          diagramControls.captureVideo.srcObject = stream;
+          await diagramControls.captureVideo.play();
+          if (diagramControls.captureVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+            await new Promise((resolve, reject) => {
+              const timeoutId = window.setTimeout(() => reject(new Error("共有画面を読み込めませんでした。")), 10000);
+              diagramControls.captureVideo.addEventListener("loadeddata", () => {
+                window.clearTimeout(timeoutId);
+                resolve();
+              }, { once: true });
+              diagramControls.captureVideo.addEventListener("error", () => {
+                window.clearTimeout(timeoutId);
+                reject(new Error("共有画面を読み込めませんでした。"));
+              }, { once: true });
+            });
+          }
+          stream.getVideoTracks().forEach((track) => {
+            track.addEventListener("ended", () => {
+              if (diagramCaptureState.stream === stream) {
+                stopDiagramScreenShare();
+                setDiagramStatus("画面共有が終了しました。もう一度取り込む場合は枠をクリックしてください。", "error");
+              }
+            });
+          });
+          diagramControls.captureStatus.textContent = "共有画面上をクリック＆ドラッグして、背景に取り込む範囲を選択してください。";
+          diagramControls.captureDialog.showModal();
+          setDiagramStatus("共有画面上で範囲を選択してください。");
+        } catch (error) {
+          stopDiagramScreenShare();
+          const message = error.name === "AbortError" || error.name === "NotAllowedError"
+            ? "画面共有がキャンセルされたか許可されませんでした。もう一度枠をクリックして共有を許可してください。"
+            : `画面を共有できませんでした。${error.message || "ブラウザーの設定を確認してください。"}`;
+          setDiagramStatus(message, "error");
+        } finally {
+          diagramCaptureState.starting = false;
+          diagramControls.captureButton.disabled = false;
+        }
+      }
+
+      async function finishDiagramScreenSelection(start, end) {
+        const rect = {
+          left: Math.min(start.x, end.x),
+          top: Math.min(start.y, end.y),
+          right: Math.max(start.x, end.x),
+          bottom: Math.max(start.y, end.y)
+        };
+        if (rect.right - rect.left < 10 || rect.bottom - rect.top < 10) {
+          diagramControls.captureSelection.hidden = true;
+          diagramControls.captureStatus.textContent = "幅と高さが10ピクセル以上になるように範囲をドラッグしてください。";
+          return;
+        }
+
+        try {
+          const file = await createCapturedBackgroundFile(rect);
+          stopDiagramScreenShare();
+          const loaded = await loadDiagramBackground(file);
+          if (loaded) {
+            setDiagramStatus("選択した画面範囲を背景画像に取り込みました。表示倍率で拡大・縮小できます。", "success");
+          }
+        } catch (error) {
+          diagramControls.captureStatus.textContent = error.message || "範囲を画像にできませんでした。もう一度選択してください。";
+          diagramControls.captureSelection.hidden = true;
+        }
+      }
+
       function loadDiagramBackground(file) {
         if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
           setDiagramStatus("背景はJPEG、PNG、WebP、GIF形式を選択してください。", "error");
@@ -2760,6 +3044,7 @@
             diagramState.background = image;
             diagramState.backgroundUrl = nextUrl;
             diagramControls.backgroundInput.dataset.fileName = file.name;
+            diagramControls.captureButton.hidden = true;
             const canvasSize = 1200 / Math.max(image.naturalWidth, image.naturalHeight);
             diagramControls.canvas.width = Math.max(1, Math.round(image.naturalWidth * canvasSize));
             diagramControls.canvas.height = Math.max(1, Math.round(image.naturalHeight * canvasSize));
@@ -2832,6 +3117,47 @@
         if (file) {
           loadDiagramBackground(file);
         }
+      });
+      diagramControls.captureButton.addEventListener("click", startDiagramScreenCapture);
+      diagramControls.cancelCaptureButton.addEventListener("click", () => {
+        stopDiagramScreenShare();
+        setDiagramStatus("画面の取り込みをキャンセルしました。");
+      });
+      diagramControls.captureDialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        stopDiagramScreenShare();
+        setDiagramStatus("画面の取り込みをキャンセルしました。");
+      });
+      diagramControls.capturePreview.addEventListener("pointerdown", (event) => {
+        if (!diagramCaptureState.stream || event.button !== 0) {
+          return;
+        }
+        const rect = diagramControls.captureVideo.getBoundingClientRect();
+        if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+          return;
+        }
+        event.preventDefault();
+        diagramCaptureState.selectionStart = getCapturePoint(event);
+        diagramControls.capturePreview.setPointerCapture(event.pointerId);
+        drawCaptureSelection(diagramCaptureState.selectionStart, diagramCaptureState.selectionStart);
+      });
+      diagramControls.capturePreview.addEventListener("pointermove", (event) => {
+        if (diagramCaptureState.selectionStart) {
+          drawCaptureSelection(diagramCaptureState.selectionStart, getCapturePoint(event));
+        }
+      });
+      diagramControls.capturePreview.addEventListener("pointerup", (event) => {
+        if (!diagramCaptureState.selectionStart) {
+          return;
+        }
+        const start = diagramCaptureState.selectionStart;
+        const end = getCapturePoint(event);
+        diagramCaptureState.selectionStart = null;
+        finishDiagramScreenSelection(start, end);
+      });
+      diagramControls.capturePreview.addEventListener("pointercancel", () => {
+        diagramCaptureState.selectionStart = null;
+        diagramControls.captureSelection.hidden = true;
       });
       document.querySelectorAll("[data-add-diagram-item]").forEach((button) => {
         button.addEventListener("click", () => addDiagramItem(button.dataset.addDiagramItem));
