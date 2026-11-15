@@ -825,21 +825,40 @@
       text-align: center;
     }
 
-    .diagram-legend {
+    .diagram-legend-layout {
       display: grid;
-      width: max-content;
-      gap: 4px;
+      width: 82%;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      column-gap: 20px;
       margin: 54px 0 24px 12%;
+    }
+
+    .diagram-legend,
+    .diagram-vehicle-legend {
+      display: grid;
+      gap: 4px;
+      margin: 0;
       padding: 0;
       list-style: none;
       font-size: 11px;
       line-height: 1.35;
     }
 
-    .diagram-legend li {
+    .diagram-legend li,
+    .diagram-vehicle-legend li {
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .diagram-vehicle-legend {
+      gap: 8px;
+    }
+
+    .diagram-vehicle-legend li {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 8px;
     }
 
     .diagram-legend-mark {
@@ -885,21 +904,18 @@
     }
 
     .diagram-legend-vehicle-icon {
-      position: absolute;
-      top: -3px;
-      left: -3px;
-      width: 36px;
-      height: 18px;
-      fill: #fff;
-      stroke: #111;
-      stroke-width: 1.5;
+      display: block;
+      width: 92px;
+      height: 46px;
+      fill: #c98be7;
+      stroke: #30243c;
+      stroke-width: 1.2;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
     .diagram-legend-vehicle-icon .vehicle-wheel {
-      fill: #111;
-      stroke: #111;
+      fill: #c98be7;
     }
 
     .diagram-legend-mark[data-mark="target"]::before {
@@ -1257,6 +1273,24 @@
       .applicant-block {
         width: 70%;
       }
+
+      .diagram-legend-layout {
+        width: 100%;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        column-gap: 8px;
+        margin-right: 0;
+        margin-left: 0;
+      }
+
+      .diagram-vehicle-legend li {
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 5px;
+      }
+
+      .diagram-legend-vehicle-icon {
+        width: 64px;
+        height: 32px;
+      }
     }
 
     @media print {
@@ -1461,7 +1495,7 @@
         display: none !important;
       }
 
-      body.print-work-diagram .diagram-legend {
+      body.print-work-diagram .diagram-legend-layout {
         margin-top: 14mm;
         margin-bottom: 8mm;
       }
@@ -1811,34 +1845,40 @@
           </div>
           <h3 class="diagram-document-title">作業形態図</h3>
         </header>
-        <ul class="diagram-legend" aria-label="作業形態図の凡例">
-          <li><span class="diagram-legend-mark" data-mark="zone" aria-hidden="true"></span>区画（カラーコーン・バー）</li>
-          <li><span class="diagram-legend-mark" data-mark="staff" aria-hidden="true"></span>交通誘導員</li>
-          <li><span class="diagram-legend-mark" data-mark="vehicle" aria-hidden="true">
-            <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24">
-              <path d="M3 8h5l4-4h30l4 4v8l-4 4H8l-5-4z"></path>
-              <path d="M4 9h5v6H4zM13 5v14"></path>
-              <path class="vehicle-wheel" d="M9 3h4v2H9zM9 19h4v2H9zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
-              <circle cx="17" cy="12" r="2.5"></circle>
-              <path d="M17 10h20v4H17zM27 10v4"></path>
-              <rect x="38" y="8" width="6" height="8" rx="1"></rect>
-              <path d="M40 8v8M42 8v8"></path>
-            </svg>
-          </span>作業車両（高所作業車）</li>
-          <li><span class="diagram-legend-mark" data-mark="vehicle-alt" aria-hidden="true">
-            <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24">
-              <path d="M3 8h5l4-4h30l4 4v8l-4 4H8l-5-4z"></path>
-              <path d="M4 9h5v6H4zM13 5v14"></path>
-              <path class="vehicle-wheel" d="M9 3h4v2H9zM9 19h4v2H9zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
-              <path d="M16 4v16M20 6v12"></path>
-              <circle cx="18" cy="12" r="2.5"></circle>
-              <path d="M18 10h23v4H18zM27 10v4M34 10v4"></path>
-              <path d="M41 12v4l2 1"></path>
-              <circle cx="44" cy="17" r="1.5"></circle>
-            </svg>
-          </span>作業車両（揚重車）</li>
-          <li><span class="diagram-legend-mark" data-mark="target" aria-hidden="true"></span>作業対象</li>
-        </ul>
+        <div class="diagram-legend-layout">
+          <ul class="diagram-legend" aria-label="作業形態図の凡例">
+            <li><span class="diagram-legend-mark" data-mark="zone" aria-hidden="true"></span>区画（カラーコーン・バー）</li>
+            <li><span class="diagram-legend-mark" data-mark="staff" aria-hidden="true"></span>交通誘導員</li>
+            <li><span class="diagram-legend-mark" data-mark="target" aria-hidden="true"></span>作業対象</li>
+          </ul>
+          <ul class="diagram-vehicle-legend" aria-label="作業車両のアイコン">
+            <li>
+              <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
+                <path d="M3 8h4l5-4h3v16h-3l-5-4H3z"></path>
+                <path d="M13 3h32v18H13zM4 9h5v6H4zM13 5v14"></path>
+                <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
+                <circle cx="21" cy="12" r="3.5"></circle>
+                <path d="M21 10h16v4H21zM29 10v4"></path>
+                <ellipse cx="40" cy="12" rx="4" ry="6"></ellipse>
+                <path d="M40 8v8"></path>
+              </svg>
+              <span>作業車両（高所作業車）</span>
+            </li>
+            <li>
+              <svg class="diagram-legend-vehicle-icon" viewBox="0 0 48 24" aria-hidden="true">
+                <path d="M3 8h4l5-4h3v16h-3l-5-4H3z"></path>
+                <path d="M13 4h32v16H13zM4 9h5v6H4zM13 5v14"></path>
+                <path class="vehicle-wheel" d="M10 3h4v2h-4zM10 19h4v2h-4zM38 3h4v2h-4zM38 19h4v2h-4z"></path>
+                <path d="M16 3v18"></path>
+                <circle cx="18" cy="12" r="3"></circle>
+                <path d="M18 10h24v4H18zM26 10v4M34 10v4"></path>
+                <path d="M42 12v4l2 1"></path>
+                <circle cx="45" cy="17" r="1.5"></circle>
+              </svg>
+              <span>作業車両（揚重車）</span>
+            </li>
+          </ul>
+        </div>
         <div class="diagram-drawing-frame">
           <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
             <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
