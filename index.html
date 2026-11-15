@@ -859,10 +859,10 @@
       display: block;
     }
 
+    .diagram-legend-tool,
     .diagram-vehicle-tool {
       display: grid;
       width: 100%;
-      grid-template-columns: 92px minmax(0, 1fr);
       align-items: center;
       gap: 8px;
       padding: 2px;
@@ -875,9 +875,24 @@
       cursor: pointer;
     }
 
+    .diagram-legend-tool {
+      grid-template-columns: 30px minmax(0, 1fr);
+    }
+
+    .diagram-vehicle-tool {
+      grid-template-columns: 92px minmax(0, 1fr);
+    }
+
+    .diagram-legend-tool[aria-pressed="true"],
     .diagram-vehicle-tool[aria-pressed="true"] {
       border-color: #176b53;
       background: #e9f4f0;
+    }
+
+    .diagram-legend-tool:focus-visible,
+    .diagram-vehicle-tool:focus-visible {
+      outline: 3px solid rgb(71 148 119 / 35%);
+      outline-offset: 2px;
     }
 
     .diagram-legend-mark {
@@ -962,47 +977,6 @@
       flex-wrap: wrap;
       align-items: end;
       gap: 8px;
-    }
-
-    .diagram-zone-tool,
-    .diagram-staff-tool,
-    .diagram-target-tool {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .diagram-zone-tool[aria-pressed="true"] {
-      border-color: #e12e37;
-      background: #fff0f1;
-    }
-
-    .diagram-staff-tool[aria-pressed="true"] {
-      border-color: #164cdf;
-      background: #f0f4ff;
-    }
-
-    .diagram-target-tool[aria-pressed="true"] {
-      border-color: #e12e37;
-      background: #fff0f1;
-    }
-
-    .diagram-zone-tool-icon {
-      display: block;
-      width: 30px;
-      height: 12px;
-    }
-
-    .diagram-staff-tool-icon {
-      display: block;
-      width: 20px;
-      height: 20px;
-    }
-
-    .diagram-target-tool-icon {
-      display: block;
-      width: 30px;
-      height: 12px;
     }
 
     .diagram-field {
@@ -1873,30 +1847,10 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。凡例の高所作業車・揚重車アイコンもクリックして配置できます。各ツールの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">作業形態図の凡例にある区画・交通誘導員・作業対象・高所作業車・揚重車のアイコンをクリックして描画を開始し、作図枠内をクリックして配置します。選択中のアイコンを再クリックするかEscキーを押すと描画を終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
             <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
-            <button class="attachment-button diagram-zone-tool" type="button" data-toggle-zone-drawing aria-pressed="false">
-              <svg class="diagram-zone-tool-icon" viewBox="0 0 30 12" aria-hidden="true">
-                <path d="M5 6h20" fill="none" stroke="#e12e37" stroke-width="2"></path>
-                <circle cx="5" cy="6" r="3" fill="#e12e37"></circle>
-                <circle cx="25" cy="6" r="3" fill="#e12e37"></circle>
-              </svg>
-              <span data-zone-tool-label>区画を描く</span>
-            </button>
-            <button class="attachment-button diagram-staff-tool" type="button" data-toggle-staff-drawing aria-pressed="false">
-              <svg class="diagram-staff-tool-icon" viewBox="0 0 20 20" aria-hidden="true">
-                <circle cx="10" cy="10" r="7" fill="#164cdf"></circle>
-              </svg>
-              <span data-staff-tool-label>交通誘導員を描く</span>
-            </button>
-            <button class="attachment-button diagram-target-tool" type="button" data-toggle-target-drawing aria-pressed="false">
-              <svg class="diagram-target-tool-icon" viewBox="0 0 30 12" aria-hidden="true">
-                <rect x="5" y="4" width="20" height="4" fill="#e12e37"></rect>
-              </svg>
-              <span data-target-tool-label>作業対象を描く</span>
-            </button>
             <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
             <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
             <button class="attachment-button" type="button" data-add-diagram-item="vehicle">作業車両を追加</button>
@@ -1935,10 +1889,25 @@
           <h3 class="diagram-document-title">作業形態図</h3>
         </header>
         <div class="diagram-legend-layout">
-          <ul class="diagram-legend" aria-label="作業形態図の凡例">
-            <li><span class="diagram-legend-mark" data-mark="zone" aria-hidden="true"></span>区画（カラーコーン・バー）</li>
-            <li><span class="diagram-legend-mark" data-mark="staff" aria-hidden="true"></span>交通誘導員</li>
-            <li><span class="diagram-legend-mark" data-mark="target" aria-hidden="true"></span>作業対象</li>
+          <ul class="diagram-legend" aria-label="作業形態図の凡例・描画ツール">
+            <li>
+              <button class="diagram-legend-tool" type="button" data-toggle-zone-drawing aria-pressed="false">
+                <span class="diagram-legend-mark" data-mark="zone" aria-hidden="true"></span>
+                <span data-zone-tool-label>区画（カラーコーン・バー）</span>
+              </button>
+            </li>
+            <li>
+              <button class="diagram-legend-tool" type="button" data-toggle-staff-drawing aria-pressed="false">
+                <span class="diagram-legend-mark" data-mark="staff" aria-hidden="true"></span>
+                <span data-staff-tool-label>交通誘導員</span>
+              </button>
+            </li>
+            <li>
+              <button class="diagram-legend-tool" type="button" data-toggle-target-drawing aria-pressed="false">
+                <span class="diagram-legend-mark" data-mark="target" aria-hidden="true"></span>
+                <span data-target-tool-label>作業対象</span>
+              </button>
+            </li>
           </ul>
           <ul class="diagram-vehicle-legend" aria-label="作業車両のアイコン">
             <li>
@@ -2876,11 +2845,11 @@
 
       function setDiagramDrawingToolActive(type, active) {
         const tools = {
-          zone: { button: diagramControls.zoneToolButton, label: diagramControls.zoneToolLabel, activeLabel: "区画を完成", idleLabel: "区画を描く" },
-          staff: { button: diagramControls.staffToolButton, label: diagramControls.staffToolLabel, activeLabel: "誘導員配置を完成", idleLabel: "交通誘導員を描く" },
-          target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象を完成", idleLabel: "作業対象を描く" },
-          "vehicle-high-lift": { button: diagramControls.highLiftToolButton, label: diagramControls.highLiftToolLabel, activeLabel: "高所作業車の配置を完成", idleLabel: "作業車両（高所作業車）" },
-          "vehicle-crane": { button: diagramControls.craneToolButton, label: diagramControls.craneToolLabel, activeLabel: "揚重車の配置を完成", idleLabel: "作業車両（揚重車）" }
+          zone: { button: diagramControls.zoneToolButton, label: diagramControls.zoneToolLabel, activeLabel: "区画の描画を終了", idleLabel: "区画（カラーコーン・バー）" },
+          staff: { button: diagramControls.staffToolButton, label: diagramControls.staffToolLabel, activeLabel: "交通誘導員の描画を終了", idleLabel: "交通誘導員" },
+          target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象の描画を終了", idleLabel: "作業対象" },
+          "vehicle-high-lift": { button: diagramControls.highLiftToolButton, label: diagramControls.highLiftToolLabel, activeLabel: "高所作業車の描画を終了", idleLabel: "作業車両（高所作業車）" },
+          "vehicle-crane": { button: diagramControls.craneToolButton, label: diagramControls.craneToolLabel, activeLabel: "揚重車の描画を終了", idleLabel: "作業車両（揚重車）" }
         };
         const tool = tools[type];
         tool.button.setAttribute("aria-pressed", String(active));
