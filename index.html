@@ -1826,7 +1826,7 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">「区画を描く」を選んで作図枠内をクリックすると、赤丸とバーを連続して描けます。ボタンを再クリックするかEscキーで終了します。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">「区画を描く」を選んで作図枠内をクリックすると、赤丸とバーを連続して描けます。ボタンを再クリックするかEscキーで終了します。描画後は赤丸またはバーをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
             <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
@@ -2816,7 +2816,12 @@
         diagramControls.wrap.dataset.mode = "move";
         setDiagramZoneToolActive(false);
         drawWorkDiagram();
-        setDiagramStatus(drawing.lastPoint ? "区画の描画を終了しました。" : "区画の描画をキャンセルしました。", drawing.lastPoint ? "success" : undefined);
+        setDiagramStatus(
+          drawing.lastPoint
+            ? "区画の描画を終了しました。赤丸またはバーをクリックして選択し、削除ボタンまたはDeleteキーで個別に削除できます。"
+            : "区画の描画をキャンセルしました。",
+          drawing.lastPoint ? "success" : undefined
+        );
       }
 
       function toggleDiagramZoneDrawing() {
@@ -3035,9 +3040,20 @@
         if (item) {
           diagramControls.itemLength.value = String(item.lengthMm);
           diagramControls.itemWidth.value = String(item.widthMm);
-          setDiagramStatus(`${item.label}を選択中です。ドラッグで移動し、長さ・幅・向きを調整できます。`, "success");
+          setDiagramStatus(`${item.label}を選択中です。ドラッグで移動し、長さ・幅・向きを調整できます。「選択アイテムを削除」またはDeleteキーで削除できます。`, "success");
         }
         drawWorkDiagram();
+      }
+
+      function deleteSelectedDiagramItem() {
+        const index = diagramState.items.findIndex((item) => item.id === diagramState.selectedId);
+        if (index < 0) {
+          return false;
+        }
+        const [removed] = diagramState.items.splice(index, 1);
+        setSelectedDiagramItem(null);
+        setDiagramStatus(`${removed.label}を削除しました。`);
+        return true;
       }
 
       function getDiagramPoint(event) {
@@ -3366,6 +3382,21 @@
         event.preventDefault();
         finishDiagramZoneDrawing();
       });
+      window.addEventListener("keydown", (event) => {
+        if (event.key !== "Delete") {
+          return;
+        }
+        const target = event.target;
+        if ((target instanceof HTMLElement && (target.isContentEditable || target.closest("input, textarea, select")))
+          || diagramState.zoneDrawing
+          || diagramState.calibrationMode
+          || diagramControls.captureDialog.open) {
+          return;
+        }
+        if (deleteSelectedDiagramItem()) {
+          event.preventDefault();
+        }
+      });
       document.querySelectorAll("[data-add-diagram-item]").forEach((button) => {
         button.addEventListener("click", () => addDiagramItem(button.dataset.addDiagramItem));
       });
@@ -3466,14 +3497,7 @@
           }
         });
       });
-      diagramControls.deleteButton.addEventListener("click", () => {
-        const index = diagramState.items.findIndex((item) => item.id === diagramState.selectedId);
-        if (index >= 0) {
-          const [removed] = diagramState.items.splice(index, 1);
-          setSelectedDiagramItem(null);
-          setDiagramStatus(`${removed.label}を削除しました。`);
-        }
-      });
+      diagramControls.deleteButton.addEventListener("click", deleteSelectedDiagramItem);
       diagramControls.zoom.addEventListener("input", () => {
         diagramControls.canvas.style.width = `${diagramControls.zoom.value}%`;
       });
