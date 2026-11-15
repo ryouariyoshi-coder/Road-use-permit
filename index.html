@@ -992,6 +992,10 @@
       font-weight: 700;
     }
 
+    .diagram-field[hidden] {
+      display: none;
+    }
+
     .diagram-field input {
       min-height: 36px;
       padding: 6px 8px;
@@ -1842,8 +1846,10 @@
         </div>
         <div class="work-diagram-controls">
           <p class="map-service-note">作業形態図の凡例にある区画・交通誘導員・作業対象・高所作業車・揚重車のアイコンをクリックして描画を開始し、作図枠内をクリックして配置します。選択中のアイコンを再クリックするかEscキーを押すと描画を終了できます。背景画像は作図枠内をクリックして画面共有から取り込み、表示倍率で調整します。描画後はアイテムをクリックして選び、Deleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。縮尺を設定する機能はなく、寸法は画面上の目安です。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">寸法線は欄外のボタンから配置し、選択後に表示文字を入力できます。左右ハンドルで長さ、上部の回転ハンドルで向きを調整できます。</p>
           <div class="diagram-toolbar">
             <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
+            <button class="attachment-button" type="button" data-toggle-dimension-drawing aria-pressed="false"><span data-dimension-tool-label>寸法線を描画</span></button>
           </div>
           <div class="diagram-view-controls">
             <label class="diagram-field">表示倍率
@@ -1854,8 +1860,11 @@
             <label class="diagram-field">長さ（mm・100mm刻み）
               <input type="number" data-diagram-item-length min="100" step="100">
             </label>
-            <label class="diagram-field">幅（mm・100mm刻み）
+            <label class="diagram-field" data-diagram-item-width-field>幅（mm・100mm刻み）
               <input type="number" data-diagram-item-width min="100" step="100">
+            </label>
+            <label class="diagram-field" data-diagram-dimension-text-field hidden>寸法表示
+              <input type="text" data-diagram-item-dimension-text maxlength="32" placeholder="例：10,000mm">
             </label>
           </div>
           <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。寸法は画面上の目安です。</p>
@@ -2000,12 +2009,17 @@
         selectionControls: document.querySelector("[data-diagram-selection-controls]"),
         itemLength: document.querySelector("[data-diagram-item-length]"),
         itemWidth: document.querySelector("[data-diagram-item-width]"),
+        itemWidthField: document.querySelector("[data-diagram-item-width-field]"),
+        dimensionTextField: document.querySelector("[data-diagram-dimension-text-field]"),
+        itemDimensionText: document.querySelector("[data-diagram-item-dimension-text]"),
         zoneToolButton: document.querySelector("[data-toggle-zone-drawing]"),
         zoneToolLabel: document.querySelector("[data-zone-tool-label]"),
         staffToolButton: document.querySelector("[data-toggle-staff-drawing]"),
         staffToolLabel: document.querySelector("[data-staff-tool-label]"),
         targetToolButton: document.querySelector("[data-toggle-target-drawing]"),
         targetToolLabel: document.querySelector("[data-target-tool-label]"),
+        dimensionToolButton: document.querySelector("[data-toggle-dimension-drawing]"),
+        dimensionToolLabel: document.querySelector("[data-dimension-tool-label]"),
         highLiftToolButton: document.querySelector('[data-toggle-vehicle-drawing="vehicle-high-lift"]'),
         highLiftToolLabel: document.querySelector("[data-vehicle-high-lift-label]"),
         craneToolButton: document.querySelector('[data-toggle-vehicle-drawing="vehicle-crane"]'),
@@ -2821,6 +2835,7 @@
           zone: { button: diagramControls.zoneToolButton, label: diagramControls.zoneToolLabel, activeLabel: "区画の描画を終了", idleLabel: "区画（カラーコーン・バー）" },
           staff: { button: diagramControls.staffToolButton, label: diagramControls.staffToolLabel, activeLabel: "交通誘導員の描画を終了", idleLabel: "交通誘導員" },
           target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象の描画を終了", idleLabel: "作業対象" },
+          "dimension-line": { button: diagramControls.dimensionToolButton, label: diagramControls.dimensionToolLabel, activeLabel: "寸法線の描画を終了", idleLabel: "寸法線を描画" },
           "vehicle-high-lift": { button: diagramControls.highLiftToolButton, label: diagramControls.highLiftToolLabel, activeLabel: "高所作業車の描画を終了", idleLabel: "作業車両（高所作業車）" },
           "vehicle-crane": { button: diagramControls.craneToolButton, label: diagramControls.craneToolLabel, activeLabel: "揚重車の描画を終了", idleLabel: "作業車両（揚重車）" }
         };
@@ -2839,6 +2854,7 @@
         setDiagramDrawingToolActive("zone", false);
         setDiagramDrawingToolActive("staff", false);
         setDiagramDrawingToolActive("target", false);
+        setDiagramDrawingToolActive("dimension-line", false);
         setDiagramDrawingToolActive("vehicle-high-lift", false);
         setDiagramDrawingToolActive("vehicle-crane", false);
         drawWorkDiagram();
@@ -2855,6 +2871,10 @@
           target: {
             complete: "作業対象の描画を終了しました。アイコンをクリックして選択し、長さ・太さ・向きを調整できます。Deleteキーで個別に削除できます。",
             cancel: "作業対象の描画をキャンセルしました。"
+          },
+          "dimension-line": {
+            complete: "寸法線の描画を終了しました。寸法表示は選択して編集できます。",
+            cancel: "寸法線の描画をキャンセルしました。"
           },
           "vehicle-high-lift": {
             complete: "高所作業車の描画を終了しました。車両を選択し、枠のハンドルで長さ・太さ・向きを調整できます。Deleteキーで個別に削除できます。",
@@ -2884,6 +2904,7 @@
             zone: "区画",
             staff: "交通誘導員",
             target: "作業対象",
+            "dimension-line": "寸法線",
             "vehicle-high-lift": "高所作業車",
             "vehicle-crane": "揚重車"
           };
@@ -2902,6 +2923,7 @@
           zone: "作図枠をクリックして赤丸を置き、次の場所をクリックしてバーをつなぎます。Escキーまたは「区画を完成」で終了します。",
           staff: "作図枠をクリックするたびに青丸の交通誘導員を配置します。Escキーまたは「誘導員配置を完成」で終了します。",
           target: "作図枠をクリックするたびに作業対象アイコンを配置します。Escキーまたは「作業対象を完成」で終了します。",
+          "dimension-line": "作図枠をクリックして寸法線を配置します。寸法表示欄で表示文字を編集できます。Escキーまたはボタンの再クリックで終了します。",
           "vehicle-high-lift": "作図枠をクリックするたびに高所作業車を配置します。アイコンの再クリックまたはEscキーで終了します。",
           "vehicle-crane": "作図枠をクリックするたびに揚重車を配置します。アイコンの再クリックまたはEscキーで終了します。"
         };
@@ -2960,11 +2982,12 @@
         } else {
           const itemDefinitions = {
             target: { type: "work-target", label: "作業対象", lengthMm: 1500, widthMm: 300 },
+            "dimension-line": { type: "dimension-line", label: "寸法線", lengthMm: 10000, widthMm: 300 },
             "vehicle-high-lift": { type: "vehicle-high-lift", label: "作業車両（高所作業車）", lengthMm: 4500, widthMm: 1800 },
             "vehicle-crane": { type: "vehicle-crane", label: "作業車両（揚重車）", lengthMm: 4500, widthMm: 1800 }
           };
           const itemDefinition = itemDefinitions[drawing.type];
-          diagramState.items.push({
+          const item = {
             id: diagramState.nextItemId,
             type: itemDefinition.type,
             label: itemDefinition.label,
@@ -2972,11 +2995,18 @@
             y: point.y,
             lengthMm: itemDefinition.lengthMm,
             widthMm: itemDefinition.widthMm,
-            rotation: 0
-          });
+            rotation: 0,
+            ...(drawing.type === "dimension-line" ? { dimensionText: "10,000mm" } : {})
+          };
+          diagramState.items.push(item);
           diagramState.nextItemId += 1;
           drawing.count += 1;
-          setDiagramStatus(`${itemDefinition.label}を配置しました。続けてクリックするか、Escキーで終了してください。`);
+          if (drawing.type === "dimension-line") {
+            setSelectedDiagramItem(item);
+            setDiagramStatus("寸法線を配置しました。寸法表示欄で文字を編集し、左右ハンドルで長さ、上部ハンドルで向きを調整できます。続けて配置するか、Escキーで終了してください。");
+          } else {
+            setDiagramStatus(`${itemDefinition.label}を配置しました。続けてクリックするか、Escキーで終了してください。`);
+          }
         }
         drawWorkDiagram();
       }
@@ -3003,21 +3033,30 @@
         const halfLength = dimensions.length / 2;
         const halfWidth = dimensions.width / 2;
         const offset = 8 * interfaceScale;
+        const resizeHandles = item.type === "dimension-line"
+          ? [
+            { type: "resize", horizontal: -1, vertical: 0, x: -halfLength - offset, y: 0, cursor: "ew-resize" },
+            { type: "resize", horizontal: 1, vertical: 0, x: halfLength + offset, y: 0, cursor: "ew-resize" }
+          ]
+          : [
+            { type: "resize", horizontal: -1, vertical: -1, x: -halfLength - offset, y: -halfWidth - offset, cursor: "nwse-resize" },
+            { type: "resize", horizontal: 0, vertical: -1, x: 0, y: -halfWidth - offset, cursor: "ns-resize" },
+            { type: "resize", horizontal: 1, vertical: -1, x: halfLength + offset, y: -halfWidth - offset, cursor: "nesw-resize" },
+            { type: "resize", horizontal: 1, vertical: 0, x: halfLength + offset, y: 0, cursor: "ew-resize" },
+            { type: "resize", horizontal: 1, vertical: 1, x: halfLength + offset, y: halfWidth + offset, cursor: "nwse-resize" },
+            { type: "resize", horizontal: 0, vertical: 1, x: 0, y: halfWidth + offset, cursor: "ns-resize" },
+            { type: "resize", horizontal: -1, vertical: 1, x: -halfLength - offset, y: halfWidth + offset, cursor: "nesw-resize" },
+            { type: "resize", horizontal: -1, vertical: 0, x: -halfLength - offset, y: 0, cursor: "ew-resize" }
+          ];
         return [
-          { type: "resize", horizontal: -1, vertical: -1, x: -halfLength - offset, y: -halfWidth - offset, cursor: "nwse-resize" },
-          { type: "resize", horizontal: 0, vertical: -1, x: 0, y: -halfWidth - offset, cursor: "ns-resize" },
-          { type: "resize", horizontal: 1, vertical: -1, x: halfLength + offset, y: -halfWidth - offset, cursor: "nesw-resize" },
-          { type: "resize", horizontal: 1, vertical: 0, x: halfLength + offset, y: 0, cursor: "ew-resize" },
-          { type: "resize", horizontal: 1, vertical: 1, x: halfLength + offset, y: halfWidth + offset, cursor: "nwse-resize" },
-          { type: "resize", horizontal: 0, vertical: 1, x: 0, y: halfWidth + offset, cursor: "ns-resize" },
-          { type: "resize", horizontal: -1, vertical: 1, x: -halfLength - offset, y: halfWidth + offset, cursor: "nesw-resize" },
-          { type: "resize", horizontal: -1, vertical: 0, x: -halfLength - offset, y: 0, cursor: "ew-resize" },
+          ...resizeHandles,
           { type: "rotate", horizontal: 0, vertical: 0, x: 0, y: -halfWidth - 28 * getDiagramInterfaceScale(), cursor: "grab" }
         ];
       }
 
       function isDiagramDirectManipulationItem(item) {
         return item.type === "work-target"
+          || item.type === "dimension-line"
           || item.type === "vehicle-high-lift"
           || item.type === "vehicle-crane";
       }
@@ -3128,6 +3167,22 @@
         } else if (item.type === "work-target") {
           context.fillStyle = "#e12e37";
           context.fillRect(-halfLength, -halfWidth, dimensions.length, dimensions.width);
+        } else if (item.type === "dimension-line") {
+          context.strokeStyle = "#e12e37";
+          context.fillStyle = "#e12e37";
+          context.lineWidth = Math.max(2, 20 * getDiagramScale());
+          context.beginPath();
+          context.moveTo(-halfLength, 0);
+          context.lineTo(halfLength, 0);
+          context.stroke();
+          drawDiagramArrow(context, -halfLength, 0, 1);
+          drawDiagramArrow(context, halfLength, 0, -1);
+          context.font = `${Math.max(14, 180 * getDiagramScale())}px sans-serif`;
+          context.textAlign = "center";
+          context.textBaseline = "bottom";
+          if (item.dimensionText) {
+            context.fillText(item.dimensionText, 0, -halfWidth - 5);
+          }
         } else if (item.type === "vehicle-high-lift" || item.type === "vehicle-crane") {
           drawDiagramVehicle(context, item.type, dimensions);
         } else if (item.type === "cone") {
@@ -3276,12 +3331,18 @@
         diagramState.dragItem = null;
         diagramState.transformItem = null;
         diagramControls.selectionControls.hidden = !item;
+        const isDimensionLine = item && item.type === "dimension-line";
+        diagramControls.itemWidthField.hidden = Boolean(isDimensionLine);
+        diagramControls.dimensionTextField.hidden = !isDimensionLine;
+        diagramControls.itemDimensionText.value = isDimensionLine ? item.dimensionText || "" : "";
         if (item) {
           diagramControls.itemLength.value = String(item.lengthMm);
           diagramControls.itemWidth.value = String(item.widthMm);
-          const instructions = isDiagramDirectManipulationItem(item)
-            ? "枠のハンドルで長さ・太さ・回転を直接調整できます。図形本体のドラッグで移動し、Deleteキーで削除できます。"
-            : "ドラッグで移動し、長さ・幅・向きを調整できます。Deleteキーで削除できます。";
+          const instructions = isDimensionLine
+            ? "寸法表示欄で文字を編集できます。左右ハンドルで長さ、上部ハンドルで向きを調整し、Deleteキーで削除できます。"
+            : isDiagramDirectManipulationItem(item)
+              ? "枠のハンドルで長さ・太さ・回転を直接調整できます。図形本体のドラッグで移動し、Deleteキーで削除できます。"
+              : "ドラッグで移動し、長さ・幅・向きを調整できます。Deleteキーで削除できます。";
           setDiagramStatus(`${item.label}を選択中です。${instructions}`, "success");
         }
         drawWorkDiagram();
@@ -3626,6 +3687,15 @@
         setDiagramStatus(`${item.label}の${property === "lengthMm" ? "長さ" : "幅"}を${rounded}mmにしました。`, "success");
       }
 
+      function updateSelectedDiagramDimensionText(input) {
+        const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
+        if (!item || item.type !== "dimension-line") {
+          return;
+        }
+        item.dimensionText = input.value;
+        drawWorkDiagram();
+      }
+
       diagramControls.captureButton.addEventListener("click", startDiagramScreenCapture);
       diagramControls.cancelCaptureButton.addEventListener("click", () => {
         stopDiagramScreenShare();
@@ -3670,6 +3740,7 @@
       diagramControls.zoneToolButton.addEventListener("click", () => toggleDiagramDrawing("zone"));
       diagramControls.staffToolButton.addEventListener("click", () => toggleDiagramDrawing("staff"));
       diagramControls.targetToolButton.addEventListener("click", () => toggleDiagramDrawing("target"));
+      diagramControls.dimensionToolButton.addEventListener("click", () => toggleDiagramDrawing("dimension-line"));
       document.querySelectorAll("[data-toggle-vehicle-drawing]").forEach((button) => {
         button.addEventListener("click", () => toggleDiagramDrawing(button.dataset.toggleVehicleDrawing));
       });
@@ -3760,7 +3831,11 @@
           diagramState.transformItem = null;
           if (item) {
             setDiagramStatus(
-              transform.type === "rotate" ? `${item.label}の向きを調整しました。` : `${item.label}の長さ・太さを調整しました。`,
+              transform.type === "rotate"
+                ? `${item.label}の向きを調整しました。`
+                : item.type === "dimension-line"
+                  ? `${item.label}の長さを調整しました。`
+                  : `${item.label}の長さ・太さを調整しました。`,
               "success"
             );
           }
@@ -3783,6 +3858,7 @@
       });
       diagramControls.itemLength.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemLength, "lengthMm"));
       diagramControls.itemWidth.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemWidth, "widthMm"));
+      diagramControls.itemDimensionText.addEventListener("input", () => updateSelectedDiagramDimensionText(diagramControls.itemDimensionText));
       diagramControls.zoom.addEventListener("input", () => {
         diagramControls.canvas.style.width = `${diagramControls.zoom.value}%`;
       });
