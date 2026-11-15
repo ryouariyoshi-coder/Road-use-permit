@@ -3083,7 +3083,7 @@
           context.fillRect(halfLength * 0.06, -halfWidth * 0.72, halfLength * 0.34, halfWidth * 1.44);
         }
 
-        if (!item.type.startsWith("zone-") && item.type !== "traffic-guide") {
+        if (!item.type.startsWith("zone-") && item.type !== "traffic-guide" && item.type !== "work-target") {
           context.fillStyle = "#14251f";
           context.strokeStyle = "#fff";
           context.lineWidth = Math.max(1, 10 * getDiagramScale());
