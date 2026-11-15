@@ -798,6 +798,19 @@
       min-height: 42px;
     }
 
+    .diagram-preview-controls {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .diagram-preview-settings {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 8px;
+    }
+
     .diagram-location {
       display: flex;
       width: 75%;
@@ -895,6 +908,11 @@
       outline-offset: 2px;
     }
 
+    .diagram-background-input:focus-visible + .attachment-button {
+      outline: 3px solid rgb(71 148 119 / 35%);
+      outline-offset: 2px;
+    }
+
     .diagram-legend-mark {
       position: relative;
       display: inline-block;
@@ -977,6 +995,10 @@
       flex-wrap: wrap;
       align-items: end;
       gap: 8px;
+    }
+
+    .diagram-selection-controls[hidden] {
+      display: none;
     }
 
     .diagram-field {
@@ -1534,6 +1556,10 @@
         box-shadow: none;
       }
 
+      body.print-work-diagram .diagram-preview-controls {
+        display: none !important;
+      }
+
       body.print-work-diagram .diagram-capture-dialog {
         display: none !important;
       }
@@ -1847,34 +1873,9 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">作業形態図の凡例にある区画・交通誘導員・作業対象・高所作業車・揚重車のアイコンをクリックして描画を開始し、作図枠内をクリックして配置します。選択中のアイコンを再クリックするかEscキーを押すと描画を終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">作業形態図の凡例にある区画・交通誘導員・作業対象・高所作業車・揚重車のアイコンをクリックして描画を開始し、作図枠内をクリックして配置します。選択中のアイコンを再クリックするかEscキーを押すと描画を終了できます。背景画像の選択・画面共有・縮尺設定・アイテム編集は、作業形態図プレビュー内の操作欄から行えます。描画後はアイテムをクリックして選び、Deleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
-            <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-            <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
-            <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
-            <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
-            <button class="attachment-button" type="button" data-add-diagram-item="vehicle">作業車両を追加</button>
             <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
-          </div>
-          <div class="diagram-calibration">
-            <label class="diagram-field">実測した2点間の距離（mm）
-              <input type="number" data-diagram-calibration-distance min="1" step="1" placeholder="例：10000">
-            </label>
-            <button class="attachment-button" type="button" data-start-diagram-calibration>2点を選んで縮尺を設定</button>
-            <label class="diagram-field">表示倍率
-              <input type="range" data-diagram-zoom min="50" max="200" value="100" step="10">
-            </label>
-          </div>
-          <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
-            <label class="diagram-field">長さ（mm・100mm刻み）
-              <input type="number" data-diagram-item-length min="100" step="100">
-            </label>
-            <label class="diagram-field">幅（mm・100mm刻み）
-              <input type="number" data-diagram-item-width min="100" step="100">
-            </label>
-            <button class="attachment-button" type="button" data-rotate-diagram-item="-15">左へ15°</button>
-            <button class="attachment-button" type="button" data-rotate-diagram-item="15">右へ15°</button>
-            <button class="attachment-button" type="button" data-delete-diagram-item>選択アイテムを削除</button>
           </div>
           <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。縮尺を設定するまでは、作図アイテムの寸法は画面上の目安です。</p>
         </div>
@@ -1888,6 +1889,32 @@
           </div>
           <h3 class="diagram-document-title">作業形態図</h3>
         </header>
+        <div class="diagram-preview-controls">
+          <div class="diagram-preview-settings">
+            <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
+            <div class="diagram-calibration">
+              <label class="diagram-field">実測した2点間の距離（mm）
+                <input type="number" data-diagram-calibration-distance min="1" step="1" placeholder="例：10000">
+              </label>
+              <button class="attachment-button" type="button" data-start-diagram-calibration>2点を選んで縮尺を設定</button>
+              <label class="diagram-field">表示倍率
+                <input type="range" data-diagram-zoom min="50" max="200" value="100" step="10">
+              </label>
+            </div>
+          </div>
+          <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
+            <label class="diagram-field">長さ（mm・100mm刻み）
+              <input type="number" data-diagram-item-length min="100" step="100">
+            </label>
+            <label class="diagram-field">幅（mm・100mm刻み）
+              <input type="number" data-diagram-item-width min="100" step="100">
+            </label>
+            <button class="attachment-button" type="button" data-rotate-diagram-item="-15">左へ15°</button>
+            <button class="attachment-button" type="button" data-rotate-diagram-item="15">右へ15°</button>
+            <button class="attachment-button" type="button" data-delete-diagram-item>選択アイテムを削除</button>
+          </div>
+        </div>
         <div class="diagram-legend-layout">
           <ul class="diagram-legend" aria-label="作業形態図の凡例・描画ツール">
             <li>
@@ -3638,38 +3665,6 @@
         });
       }
 
-      function addDiagramItem(type) {
-        const definitions = {
-          cone: { label: "カラーコーン", lengthMm: 600, widthMm: 600 },
-          barrier: { label: "バリケード", lengthMm: 2000, widthMm: 1000 },
-          vehicle: { label: "作業車両", lengthMm: 4500, widthMm: 1800 }
-        };
-        const definition = definitions[type];
-        if (!definition) {
-          return;
-        }
-        if (!diagramState.background) {
-          setDiagramStatus("先に背景画像を選択してください。", "error");
-          return;
-        }
-        finishDiagramDrawing();
-        const item = {
-          id: diagramState.nextItemId,
-          type,
-          label: definition.label,
-          x: diagramControls.canvas.width / 2 + (diagramState.items.length % 5) * 24,
-          y: diagramControls.canvas.height / 2 + (diagramState.items.length % 5) * 24,
-          lengthMm: definition.lengthMm,
-          widthMm: definition.widthMm,
-          rotation: 0
-        };
-        diagramState.nextItemId += 1;
-        diagramState.items.push(item);
-        diagramState.calibrationMode = false;
-        diagramControls.wrap.dataset.mode = "move";
-        setSelectedDiagramItem(item);
-      }
-
       function updateSelectedDiagramDimension(input, property) {
         const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
         if (!item) {
@@ -3762,9 +3757,6 @@
         if (deleteSelectedDiagramItem()) {
           event.preventDefault();
         }
-      });
-      document.querySelectorAll("[data-add-diagram-item]").forEach((button) => {
-        button.addEventListener("click", () => addDiagramItem(button.dataset.addDiagramItem));
       });
       diagramControls.calibrationButton.addEventListener("click", () => {
         if (!diagramState.background) {
