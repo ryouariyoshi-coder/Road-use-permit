@@ -946,7 +946,8 @@
     }
 
     .diagram-zone-tool,
-    .diagram-staff-tool {
+    .diagram-staff-tool,
+    .diagram-target-tool {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -962,6 +963,11 @@
       background: #f0f4ff;
     }
 
+    .diagram-target-tool[aria-pressed="true"] {
+      border-color: #e12e37;
+      background: #fff0f1;
+    }
+
     .diagram-zone-tool-icon {
       display: block;
       width: 30px;
@@ -972,6 +978,12 @@
       display: block;
       width: 20px;
       height: 20px;
+    }
+
+    .diagram-target-tool-icon {
+      display: block;
+      width: 30px;
+      height: 12px;
     }
 
     .diagram-field {
@@ -1122,7 +1134,8 @@
     }
 
     .diagram-canvas-wrap[data-mode="draw-zone"] .diagram-canvas,
-    .diagram-canvas-wrap[data-mode="draw-staff"] .diagram-canvas {
+    .diagram-canvas-wrap[data-mode="draw-staff"] .diagram-canvas,
+    .diagram-canvas-wrap[data-mode="draw-target"] .diagram-canvas {
       cursor: crosshair;
     }
 
@@ -1839,7 +1852,7 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">区画描画または交通誘導員描画を選び、作図枠内をクリックして配置します。各ボタンの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。各ボタンの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象は選択後、長さ・太さ・向きを調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
             <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
@@ -1856,6 +1869,12 @@
                 <circle cx="10" cy="10" r="7" fill="#164cdf"></circle>
               </svg>
               <span data-staff-tool-label>交通誘導員を描く</span>
+            </button>
+            <button class="attachment-button diagram-target-tool" type="button" data-toggle-target-drawing aria-pressed="false">
+              <svg class="diagram-target-tool-icon" viewBox="0 0 30 12" aria-hidden="true">
+                <rect x="5" y="4" width="20" height="4" fill="#e12e37"></rect>
+              </svg>
+              <span data-target-tool-label>作業対象を描く</span>
             </button>
             <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
             <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
@@ -2013,6 +2032,8 @@
         zoneToolLabel: document.querySelector("[data-zone-tool-label]"),
         staffToolButton: document.querySelector("[data-toggle-staff-drawing]"),
         staffToolLabel: document.querySelector("[data-staff-tool-label]"),
+        targetToolButton: document.querySelector("[data-toggle-target-drawing]"),
+        targetToolLabel: document.querySelector("[data-target-tool-label]"),
         printButton: document.querySelector("[data-print-work-diagram]"),
         captureButton: document.querySelector("[data-capture-diagram-screen]"),
         captureDialog: document.querySelector("[data-diagram-capture-dialog]"),
@@ -2824,13 +2845,14 @@
       }
 
       function setDiagramDrawingToolActive(type, active) {
-        const isZoneTool = type === "zone";
-        const button = isZoneTool ? diagramControls.zoneToolButton : diagramControls.staffToolButton;
-        const label = isZoneTool ? diagramControls.zoneToolLabel : diagramControls.staffToolLabel;
-        button.setAttribute("aria-pressed", String(active));
-        label.textContent = isZoneTool
-          ? (active ? "区画を完成" : "区画を描く")
-          : (active ? "誘導員配置を完成" : "交通誘導員を描く");
+        const tools = {
+          zone: { button: diagramControls.zoneToolButton, label: diagramControls.zoneToolLabel, activeLabel: "区画を完成", idleLabel: "区画を描く" },
+          staff: { button: diagramControls.staffToolButton, label: diagramControls.staffToolLabel, activeLabel: "誘導員配置を完成", idleLabel: "交通誘導員を描く" },
+          target: { button: diagramControls.targetToolButton, label: diagramControls.targetToolLabel, activeLabel: "作業対象を完成", idleLabel: "作業対象を描く" }
+        };
+        const tool = tools[type];
+        tool.button.setAttribute("aria-pressed", String(active));
+        tool.label.textContent = active ? tool.activeLabel : tool.idleLabel;
       }
 
       function finishDiagramDrawing() {
@@ -2842,13 +2864,25 @@
         diagramControls.wrap.dataset.mode = "move";
         setDiagramDrawingToolActive("zone", false);
         setDiagramDrawingToolActive("staff", false);
+        setDiagramDrawingToolActive("target", false);
         drawWorkDiagram();
         const hasDrawnItems = drawing.type === "zone" ? Boolean(drawing.lastPoint) : drawing.count > 0;
-        const message = drawing.type === "zone"
-          ? "区画の描画を終了しました。赤丸またはバーをクリックして選択し、削除ボタンまたはDeleteキーで個別に削除できます。"
-          : "交通誘導員の描画を終了しました。青丸をクリックして選択し、削除ボタンまたはDeleteキーで個別に削除できます。";
+        const messages = {
+          zone: {
+            complete: "区画の描画を終了しました。赤丸またはバーをクリックして選択し、削除ボタンまたはDeleteキーで個別に削除できます。",
+            cancel: "区画の描画をキャンセルしました。"
+          },
+          staff: {
+            complete: "交通誘導員の描画を終了しました。青丸をクリックして選択し、削除ボタンまたはDeleteキーで個別に削除できます。",
+            cancel: "交通誘導員の描画をキャンセルしました。"
+          },
+          target: {
+            complete: "作業対象の描画を終了しました。アイコンをクリックして選択し、長さ・太さ・向きを調整できます。削除ボタンまたはDeleteキーで個別に削除できます。",
+            cancel: "作業対象の描画をキャンセルしました。"
+          }
+        };
         setDiagramStatus(
-          hasDrawnItems ? message : (drawing.type === "zone" ? "区画の描画をキャンセルしました。" : "交通誘導員の描画をキャンセルしました。"),
+          hasDrawnItems ? messages[drawing.type].complete : messages[drawing.type].cancel,
           hasDrawnItems ? "success" : undefined
         );
       }
@@ -2862,7 +2896,8 @@
           finishDiagramDrawing();
         }
         if (!diagramState.background) {
-          setDiagramStatus(type === "zone" ? "区画を描く前に背景画像を選択してください。" : "交通誘導員を描く前に背景画像を選択してください。", "error");
+          const itemName = type === "zone" ? "区画" : (type === "staff" ? "交通誘導員" : "作業対象");
+          setDiagramStatus(`${itemName}を描く前に背景画像を選択してください。`, "error");
           return;
         }
         diagramState.calibrationMode = false;
@@ -2870,12 +2905,15 @@
         setSelectedDiagramItem(null);
         diagramState.drawing = type === "zone"
           ? { type: "zone", lastPoint: null, cursor: null }
-          : { type: "staff", count: 0 };
-        diagramControls.wrap.dataset.mode = type === "zone" ? "draw-zone" : "draw-staff";
+          : { type, count: 0 };
+        diagramControls.wrap.dataset.mode = `draw-${type}`;
         setDiagramDrawingToolActive(type, true);
-        setDiagramStatus(type === "zone"
-          ? "作図枠をクリックして赤丸を置き、次の場所をクリックしてバーをつなぎます。Escキーまたは「区画を完成」で終了します。"
-          : "作図枠をクリックするたびに青丸の交通誘導員を配置します。Escキーまたは「誘導員配置を完成」で終了します。");
+        const instructions = {
+          zone: "作図枠をクリックして赤丸を置き、次の場所をクリックしてバーをつなぎます。Escキーまたは「区画を完成」で終了します。",
+          staff: "作図枠をクリックするたびに青丸の交通誘導員を配置します。Escキーまたは「誘導員配置を完成」で終了します。",
+          target: "作図枠をクリックするたびに作業対象アイコンを配置します。Escキーまたは「作業対象を完成」で終了します。"
+        };
+        setDiagramStatus(instructions[type]);
       }
 
       function addDiagramDrawingPoint(point) {
@@ -2913,7 +2951,7 @@
           setDiagramStatus(previous
             ? "赤丸とバーを追加しました。続けてクリックして区画を描くか、Escキーで終了してください。"
             : "最初の赤丸を置きました。続けてクリックしてバーと次の赤丸を追加してください。");
-        } else {
+        } else if (drawing.type === "staff") {
           diagramState.items.push({
             id: diagramState.nextItemId,
             type: "traffic-guide",
@@ -2927,6 +2965,20 @@
           diagramState.nextItemId += 1;
           drawing.count += 1;
           setDiagramStatus("青丸の交通誘導員を配置しました。続けてクリックするか、Escキーで終了してください。");
+        } else {
+          diagramState.items.push({
+            id: diagramState.nextItemId,
+            type: "work-target",
+            label: "作業対象",
+            x: point.x,
+            y: point.y,
+            lengthMm: 1500,
+            widthMm: 300,
+            rotation: 0
+          });
+          diagramState.nextItemId += 1;
+          drawing.count += 1;
+          setDiagramStatus("作業対象アイコンを配置しました。続けてクリックするか、Escキーで終了してください。");
         }
         drawWorkDiagram();
       }
@@ -2987,6 +3039,9 @@
           context.moveTo(-halfLength, 0);
           context.lineTo(halfLength, 0);
           context.stroke();
+        } else if (item.type === "work-target") {
+          context.fillStyle = "#e12e37";
+          context.fillRect(-halfLength, -halfWidth, dimensions.length, dimensions.width);
         } else if (item.type === "cone") {
           context.fillStyle = "#e66b25";
           context.strokeStyle = "#7a3514";
@@ -3440,6 +3495,7 @@
       });
       diagramControls.zoneToolButton.addEventListener("click", () => toggleDiagramDrawing("zone"));
       diagramControls.staffToolButton.addEventListener("click", () => toggleDiagramDrawing("staff"));
+      diagramControls.targetToolButton.addEventListener("click", () => toggleDiagramDrawing("target"));
       window.addEventListener("keydown", (event) => {
         if (event.key !== "Escape" || !diagramState.drawing || diagramControls.captureDialog.open) {
           return;
