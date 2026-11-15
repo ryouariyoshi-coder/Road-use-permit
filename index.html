@@ -1017,6 +1017,26 @@
       background: #fff;
     }
 
+    .diagram-dimension-text-editor {
+      position: absolute;
+      z-index: 2;
+      box-sizing: border-box;
+      min-width: 80px;
+      padding: 2px 6px;
+      border: 1px solid #e12e37;
+      border-radius: 2px;
+      background: #fff;
+      color: #e12e37;
+      font-family: sans-serif;
+      line-height: 1;
+      text-align: center;
+      transform-origin: center;
+    }
+
+    .diagram-dimension-text-editor[hidden] {
+      display: none;
+    }
+
     .diagram-capture-trigger {
       position: absolute;
       z-index: 1;
@@ -1846,7 +1866,7 @@
         </div>
         <div class="work-diagram-controls">
           <p class="map-service-note">作業形態図の凡例にある区画・交通誘導員・作業対象・高所作業車・揚重車のアイコンをクリックして描画を開始し、作図枠内をクリックして配置します。選択中のアイコンを再クリックするかEscキーを押すと描画を終了できます。背景画像は作図枠内をクリックして画面共有から取り込み、表示倍率で調整します。描画後はアイテムをクリックして選び、Deleteキーで個別に削除できます。作業対象と作業車両は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。縮尺を設定する機能はなく、寸法は画面上の目安です。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
-          <p class="map-service-note">寸法線は欄外のボタンから配置し、選択後に表示文字を入力できます。左右ハンドルで長さ、上部の回転ハンドルで向きを調整できます。</p>
+          <p class="map-service-note">寸法線は欄外のボタンから配置できます。表示されている数字をダブルクリックすると直接編集でき、左右ハンドルで長さ、上部の回転ハンドルで向きを調整できます。</p>
           <div class="diagram-toolbar">
             <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
             <button class="attachment-button" type="button" data-toggle-dimension-drawing aria-pressed="false"><span data-dimension-tool-label>寸法線を描画</span></button>
@@ -1857,14 +1877,8 @@
             </label>
           </div>
           <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
-            <label class="diagram-field">長さ（mm・100mm刻み）
-              <input type="number" data-diagram-item-length min="100" step="100">
-            </label>
             <label class="diagram-field" data-diagram-item-width-field>幅（mm・100mm刻み）
               <input type="number" data-diagram-item-width min="100" step="100">
-            </label>
-            <label class="diagram-field" data-diagram-dimension-text-field hidden>寸法表示
-              <input type="text" data-diagram-item-dimension-text maxlength="32" placeholder="例：10,000mm">
             </label>
           </div>
           <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。寸法は画面上の目安です。</p>
@@ -1933,6 +1947,7 @@
         <div class="diagram-drawing-frame">
           <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
             <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
+            <input class="diagram-dimension-text-editor" type="text" data-diagram-dimension-text-editor maxlength="32" aria-label="寸法線の数字を編集" hidden>
             <button class="diagram-capture-trigger" type="button" data-capture-diagram-screen aria-label="画面共有から作業体図の背景を取り込む">
               <span>背景画像を選択してください</span>
               <span>ここをクリックして画面を共有し、取り込む範囲をドラッグします。</span>
@@ -2007,11 +2022,9 @@
         status: document.querySelector("[data-diagram-status]"),
         zoom: document.querySelector("[data-diagram-zoom]"),
         selectionControls: document.querySelector("[data-diagram-selection-controls]"),
-        itemLength: document.querySelector("[data-diagram-item-length]"),
         itemWidth: document.querySelector("[data-diagram-item-width]"),
         itemWidthField: document.querySelector("[data-diagram-item-width-field]"),
-        dimensionTextField: document.querySelector("[data-diagram-dimension-text-field]"),
-        itemDimensionText: document.querySelector("[data-diagram-item-dimension-text]"),
+        dimensionTextEditor: document.querySelector("[data-diagram-dimension-text-editor]"),
         zoneToolButton: document.querySelector("[data-toggle-zone-drawing]"),
         zoneToolLabel: document.querySelector("[data-zone-tool-label]"),
         staffToolButton: document.querySelector("[data-toggle-staff-drawing]"),
@@ -2923,7 +2936,7 @@
           zone: "作図枠をクリックして赤丸を置き、次の場所をクリックしてバーをつなぎます。Escキーまたは「区画を完成」で終了します。",
           staff: "作図枠をクリックするたびに青丸の交通誘導員を配置します。Escキーまたは「誘導員配置を完成」で終了します。",
           target: "作図枠をクリックするたびに作業対象アイコンを配置します。Escキーまたは「作業対象を完成」で終了します。",
-          "dimension-line": "作図枠をクリックして寸法線を配置します。寸法表示欄で表示文字を編集できます。Escキーまたはボタンの再クリックで終了します。",
+          "dimension-line": "作図枠をクリックして寸法線を配置します。数字をダブルクリックして直接編集できます。Escキーまたはボタンの再クリックで終了します。",
           "vehicle-high-lift": "作図枠をクリックするたびに高所作業車を配置します。アイコンの再クリックまたはEscキーで終了します。",
           "vehicle-crane": "作図枠をクリックするたびに揚重車を配置します。アイコンの再クリックまたはEscキーで終了します。"
         };
@@ -3003,7 +3016,7 @@
           drawing.count += 1;
           if (drawing.type === "dimension-line") {
             setSelectedDiagramItem(item);
-            setDiagramStatus("寸法線を配置しました。寸法表示欄で文字を編集し、左右ハンドルで長さ、上部ハンドルで向きを調整できます。続けて配置するか、Escキーで終了してください。");
+            setDiagramStatus("寸法線を配置しました。数字をダブルクリックして編集できます。左右ハンドルで長さ、上部ハンドルで向きを調整できます。続けて配置するか、Escキーで終了してください。");
           } else {
             setDiagramStatus(`${itemDefinition.label}を配置しました。続けてクリックするか、Escキーで終了してください。`);
           }
@@ -3026,6 +3039,72 @@
           length: item.lengthMm * scale,
           width: item.widthMm * scale
         };
+      }
+
+      function getDiagramDimensionTextMetrics(item) {
+        const fontSize = Math.max(14, 180 * getDiagramScale());
+        diagramContext.save();
+        diagramContext.font = `${fontSize}px sans-serif`;
+        const width = diagramContext.measureText(item.dimensionText || "").width;
+        diagramContext.restore();
+        return { fontSize, width };
+      }
+
+      function positionDiagramDimensionTextEditor() {
+        const editor = diagramControls.dimensionTextEditor;
+        if (editor.hidden) {
+          return;
+        }
+        const item = diagramState.items.find((candidate) => candidate.id === Number(editor.dataset.itemId));
+        if (!item || item.type !== "dimension-line") {
+          editor.hidden = true;
+          return;
+        }
+        const canvasRect = diagramControls.canvas.getBoundingClientRect();
+        const wrapRect = diagramControls.wrap.getBoundingClientRect();
+        const scaleX = canvasRect.width / diagramControls.canvas.width;
+        const scaleY = canvasRect.height / diagramControls.canvas.height;
+        const dimensions = getDiagramItemDimensions(item);
+        const metrics = getDiagramDimensionTextMetrics(item);
+        const textCenterY = -dimensions.width / 2 - 5 - metrics.fontSize / 2;
+        const angle = item.rotation * Math.PI / 180;
+        const canvasX = item.x - textCenterY * Math.sin(angle);
+        const canvasY = item.y + textCenterY * Math.cos(angle);
+        editor.style.left = `${canvasRect.left - wrapRect.left + canvasX * scaleX}px`;
+        editor.style.top = `${canvasRect.top - wrapRect.top + canvasY * scaleY}px`;
+        editor.style.width = `${Math.max(80, metrics.width * scaleX + 16)}px`;
+        editor.style.height = `${Math.max(24, metrics.fontSize * scaleY * 1.5)}px`;
+        editor.style.fontSize = `${metrics.fontSize * scaleY}px`;
+        editor.style.transform = `translate(-50%, -50%) rotate(${item.rotation}deg)`;
+      }
+
+      function beginDiagramDimensionTextEdit(item) {
+        const editor = diagramControls.dimensionTextEditor;
+        editor.dataset.itemId = String(item.id);
+        editor.dataset.originalValue = item.dimensionText || "";
+        editor.value = item.dimensionText || "";
+        editor.hidden = false;
+        positionDiagramDimensionTextEditor();
+        editor.focus();
+        editor.select();
+      }
+
+      function finishDiagramDimensionTextEdit(commit) {
+        const editor = diagramControls.dimensionTextEditor;
+        if (editor.hidden) {
+          return;
+        }
+        const item = diagramState.items.find((candidate) => candidate.id === Number(editor.dataset.itemId));
+        if (item && item.type === "dimension-line" && !commit) {
+          item.dimensionText = editor.dataset.originalValue;
+        }
+        editor.hidden = true;
+        delete editor.dataset.itemId;
+        delete editor.dataset.originalValue;
+        drawWorkDiagram();
+        if (commit && item && item.type === "dimension-line") {
+          setDiagramStatus("寸法線の数字を更新しました。", "success");
+        }
       }
 
       function getDiagramTransformHandles(item, interfaceScale) {
@@ -3177,7 +3256,8 @@
           context.stroke();
           drawDiagramArrow(context, -halfLength, 0, 1);
           drawDiagramArrow(context, halfLength, 0, -1);
-          context.font = `${Math.max(14, 180 * getDiagramScale())}px sans-serif`;
+          const textMetrics = getDiagramDimensionTextMetrics(item);
+          context.font = `${textMetrics.fontSize}px sans-serif`;
           context.textAlign = "center";
           context.textBaseline = "bottom";
           if (item.dimensionText) {
@@ -3324,25 +3404,23 @@
             diagramContext.fillText(String(index + 1), point.x, point.y);
           });
         }
+        positionDiagramDimensionTextEditor();
       }
 
       function setSelectedDiagramItem(item) {
         diagramState.selectedId = item ? item.id : null;
         diagramState.dragItem = null;
         diagramState.transformItem = null;
-        diagramControls.selectionControls.hidden = !item;
         const isDimensionLine = item && item.type === "dimension-line";
+        diagramControls.selectionControls.hidden = !item || Boolean(isDimensionLine);
         diagramControls.itemWidthField.hidden = Boolean(isDimensionLine);
-        diagramControls.dimensionTextField.hidden = !isDimensionLine;
-        diagramControls.itemDimensionText.value = isDimensionLine ? item.dimensionText || "" : "";
         if (item) {
-          diagramControls.itemLength.value = String(item.lengthMm);
           diagramControls.itemWidth.value = String(item.widthMm);
           const instructions = isDimensionLine
-            ? "寸法表示欄で文字を編集できます。左右ハンドルで長さ、上部ハンドルで向きを調整し、Deleteキーで削除できます。"
+            ? "数字をダブルクリックして編集できます。左右ハンドルで長さ、上部ハンドルで向きを調整し、Deleteキーで削除できます。"
             : isDiagramDirectManipulationItem(item)
               ? "枠のハンドルで長さ・太さ・回転を直接調整できます。図形本体のドラッグで移動し、Deleteキーで削除できます。"
-              : "ドラッグで移動し、長さ・幅・向きを調整できます。Deleteキーで削除できます。";
+              : "ドラッグで移動し、幅を入力して調整できます。Deleteキーで削除できます。";
           setDiagramStatus(`${item.label}を選択中です。${instructions}`, "success");
         }
         drawWorkDiagram();
@@ -3399,6 +3477,26 @@
           const localPoint = getDiagramItemLocalPoint(item, point);
           const dimensions = getDiagramItemDimensions(item);
           if (Math.abs(localPoint.x) <= dimensions.length / 2 + 20 && Math.abs(localPoint.y) <= dimensions.width / 2 + 30) {
+            return item;
+          }
+        }
+        return null;
+      }
+
+      function findDiagramDimensionTextAt(point) {
+        for (let index = diagramState.items.length - 1; index >= 0; index -= 1) {
+          const item = diagramState.items[index];
+          if (item.type !== "dimension-line") {
+            continue;
+          }
+          const localPoint = getDiagramItemLocalPoint(item, point);
+          const dimensions = getDiagramItemDimensions(item);
+          const metrics = getDiagramDimensionTextMetrics(item);
+          const baseline = -dimensions.width / 2 - 5;
+          const padding = 6 * getDiagramInterfaceScale();
+          if (Math.abs(localPoint.x) <= Math.max(metrics.width / 2, 8) + padding
+            && localPoint.y >= baseline - metrics.fontSize - padding
+            && localPoint.y <= baseline + padding) {
             return item;
           }
         }
@@ -3468,7 +3566,6 @@
           item.x = transform.startX + centerX * Math.cos(angle) - centerY * Math.sin(angle);
           item.y = transform.startY + centerX * Math.sin(angle) + centerY * Math.cos(angle);
         }
-        diagramControls.itemLength.value = String(item.lengthMm);
         diagramControls.itemWidth.value = String(item.widthMm);
         drawWorkDiagram();
       }
@@ -3670,30 +3767,21 @@
         });
       }
 
-      function updateSelectedDiagramDimension(input, property) {
+      function updateSelectedDiagramWidth(input) {
         const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
         if (!item) {
           return;
         }
         const value = Number(input.value);
         if (!Number.isFinite(value) || value < 100) {
-          setDiagramStatus("長さと幅は100mm以上で入力してください。", "error");
+          setDiagramStatus("幅は100mm以上で入力してください。", "error");
           return;
         }
         const rounded = Math.round(value / 100) * 100;
-        item[property] = rounded;
+        item.widthMm = rounded;
         input.value = String(rounded);
         drawWorkDiagram();
-        setDiagramStatus(`${item.label}の${property === "lengthMm" ? "長さ" : "幅"}を${rounded}mmにしました。`, "success");
-      }
-
-      function updateSelectedDiagramDimensionText(input) {
-        const item = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
-        if (!item || item.type !== "dimension-line") {
-          return;
-        }
-        item.dimensionText = input.value;
-        drawWorkDiagram();
+        setDiagramStatus(`${item.label}の幅を${rounded}mmにしました。`, "success");
       }
 
       diagramControls.captureButton.addEventListener("click", startDiagramScreenCapture);
@@ -3797,6 +3885,18 @@
           diagramControls.canvas.setPointerCapture(event.pointerId);
         }
       });
+      diagramControls.canvas.addEventListener("dblclick", (event) => {
+        if (diagramState.drawing) {
+          return;
+        }
+        const item = findDiagramDimensionTextAt(getDiagramPoint(event));
+        if (!item) {
+          return;
+        }
+        event.preventDefault();
+        setSelectedDiagramItem(item);
+        beginDiagramDimensionTextEdit(item);
+      });
       diagramControls.canvas.addEventListener("pointermove", (event) => {
         if (diagramState.drawing && diagramState.drawing.type === "zone") {
           diagramState.drawing.cursor = getDiagramPoint(event);
@@ -3813,7 +3913,11 @@
           const handle = selectedItem && isDiagramDirectManipulationItem(selectedItem)
             ? findDiagramTransformHandleAt(selectedItem, point)
             : null;
-          diagramControls.canvas.style.cursor = handle ? handle.cursor : "";
+          diagramControls.canvas.style.cursor = handle
+            ? handle.cursor
+            : findDiagramDimensionTextAt(point)
+              ? "text"
+              : "";
           return;
         }
         const item = diagramState.items.find((candidate) => candidate.id === diagramState.dragItem.id);
@@ -3856,12 +3960,30 @@
           diagramControls.canvas.style.cursor = "";
         }
       });
-      diagramControls.itemLength.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemLength, "lengthMm"));
-      diagramControls.itemWidth.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemWidth, "widthMm"));
-      diagramControls.itemDimensionText.addEventListener("input", () => updateSelectedDiagramDimensionText(diagramControls.itemDimensionText));
+      diagramControls.itemWidth.addEventListener("change", () => updateSelectedDiagramWidth(diagramControls.itemWidth));
+      diagramControls.dimensionTextEditor.addEventListener("input", () => {
+        const item = diagramState.items.find((candidate) => candidate.id === Number(diagramControls.dimensionTextEditor.dataset.itemId));
+        if (item && item.type === "dimension-line") {
+          item.dimensionText = diagramControls.dimensionTextEditor.value;
+          drawWorkDiagram();
+        }
+      });
+      diagramControls.dimensionTextEditor.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          finishDiagramDimensionTextEdit(false);
+        } else if (event.key === "Enter") {
+          event.preventDefault();
+          finishDiagramDimensionTextEdit(true);
+        }
+      });
+      diagramControls.dimensionTextEditor.addEventListener("blur", () => finishDiagramDimensionTextEdit(true));
       diagramControls.zoom.addEventListener("input", () => {
         diagramControls.canvas.style.width = `${diagramControls.zoom.value}%`;
+        positionDiagramDimensionTextEditor();
       });
+      window.addEventListener("resize", positionDiagramDimensionTextEditor);
       diagramControls.printButton.addEventListener("click", () => {
         if (!diagramState.background) {
           setDiagramStatus("印刷する前に背景画像を選択してください。", "error");
