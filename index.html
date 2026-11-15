@@ -1852,7 +1852,7 @@
           <span class="step">STEP 3 / 5</span>
         </div>
         <div class="work-diagram-controls">
-          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。各ボタンの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象は選択後、長さ・太さ・向きを調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <p class="map-service-note">区画描画、交通誘導員描画、作業対象描画を選び、作図枠内をクリックして配置します。各ボタンの再クリックまたはEscキーで終了できます。描画後はアイテムをクリックして選び、削除ボタンまたはDeleteキーで個別に削除できます。作業対象は選択時に表示される枠の左右ハンドルで長さ、上下ハンドルで太さ、上部の回転ハンドルで向きを直接調整できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
           <div class="diagram-toolbar">
             <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
             <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
@@ -2059,6 +2059,7 @@
         pixelsPerMm: null,
         drawing: null,
         dragItem: null,
+        transformItem: null,
         nextItemId: 1
       };
       const diagramCaptureState = {
@@ -2987,12 +2988,35 @@
         return diagramState.pixelsPerMm || 0.06;
       }
 
+      function getDiagramInterfaceScale() {
+        const rect = diagramControls.canvas.getBoundingClientRect();
+        return rect.width ? diagramControls.canvas.width / rect.width : 1;
+      }
+
       function getDiagramItemDimensions(item) {
         const scale = getDiagramScale();
         return {
           length: item.lengthMm * scale,
           width: item.widthMm * scale
         };
+      }
+
+      function getDiagramTransformHandles(item, interfaceScale) {
+        const dimensions = getDiagramItemDimensions(item);
+        const halfLength = dimensions.length / 2;
+        const halfWidth = dimensions.width / 2;
+        const offset = 8 * interfaceScale;
+        return [
+          { type: "resize", horizontal: -1, vertical: -1, x: -halfLength - offset, y: -halfWidth - offset, cursor: "nwse-resize" },
+          { type: "resize", horizontal: 0, vertical: -1, x: 0, y: -halfWidth - offset, cursor: "ns-resize" },
+          { type: "resize", horizontal: 1, vertical: -1, x: halfLength + offset, y: -halfWidth - offset, cursor: "nesw-resize" },
+          { type: "resize", horizontal: 1, vertical: 0, x: halfLength + offset, y: 0, cursor: "ew-resize" },
+          { type: "resize", horizontal: 1, vertical: 1, x: halfLength + offset, y: halfWidth + offset, cursor: "nwse-resize" },
+          { type: "resize", horizontal: 0, vertical: 1, x: 0, y: halfWidth + offset, cursor: "ns-resize" },
+          { type: "resize", horizontal: -1, vertical: 1, x: -halfLength - offset, y: halfWidth + offset, cursor: "nesw-resize" },
+          { type: "resize", horizontal: -1, vertical: 0, x: -halfLength - offset, y: 0, cursor: "ew-resize" },
+          { type: "rotate", horizontal: 0, vertical: 0, x: 0, y: -halfWidth - 28 * getDiagramInterfaceScale(), cursor: "grab" }
+        ];
       }
 
       function drawDiagramArrow(context, x, y, direction) {
@@ -3102,10 +3126,41 @@
         }
 
         if (item.id === diagramState.selectedId && !document.body.classList.contains("print-work-diagram")) {
+          const selectionPadding = 8 * getDiagramInterfaceScale();
           context.strokeStyle = "#176b53";
           context.lineWidth = 3;
           context.setLineDash([8, 5]);
-          context.strokeRect(-halfLength - 8, -halfWidth - 8, dimensions.length + 16, dimensions.width + 16);
+          context.strokeRect(
+            -halfLength - selectionPadding,
+            -halfWidth - selectionPadding,
+            dimensions.length + selectionPadding * 2,
+            dimensions.width + selectionPadding * 2
+          );
+          if (item.type === "work-target") {
+            const interfaceScale = getDiagramInterfaceScale();
+            const handles = getDiagramTransformHandles(item, interfaceScale);
+            const handleSize = 8 * interfaceScale;
+            const rotationHandleRadius = 6 * interfaceScale;
+            context.setLineDash([]);
+            context.strokeStyle = "#176b53";
+            context.lineWidth = Math.max(1, interfaceScale);
+            context.beginPath();
+            context.moveTo(0, -halfWidth - selectionPadding);
+            context.lineTo(0, -halfWidth - 22 * interfaceScale);
+            context.stroke();
+            handles.forEach((handle) => {
+              context.fillStyle = "#fff";
+              context.strokeStyle = "#176b53";
+              context.beginPath();
+              if (handle.type === "rotate") {
+                context.arc(handle.x, handle.y, rotationHandleRadius, 0, Math.PI * 2);
+              } else {
+                context.rect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
+              }
+              context.fill();
+              context.stroke();
+            });
+          }
         }
         context.restore();
       }
@@ -3154,12 +3209,17 @@
 
       function setSelectedDiagramItem(item) {
         diagramState.selectedId = item ? item.id : null;
+        diagramState.dragItem = null;
+        diagramState.transformItem = null;
         diagramControls.selectionControls.hidden = !item;
         diagramControls.deleteButton.disabled = !item;
         if (item) {
           diagramControls.itemLength.value = String(item.lengthMm);
           diagramControls.itemWidth.value = String(item.widthMm);
-          setDiagramStatus(`${item.label}を選択中です。ドラッグで移動し、長さ・幅・向きを調整できます。「選択アイテムを削除」またはDeleteキーで削除できます。`, "success");
+          const instructions = item.type === "work-target"
+            ? "枠のハンドルで長さ・太さ・回転を直接調整できます。図形本体のドラッグで移動し、削除ボタンまたはDeleteキーで削除できます。"
+            : "ドラッグで移動し、長さ・幅・向きを調整できます。削除ボタンまたはDeleteキーで削除できます。";
+          setDiagramStatus(`${item.label}を選択中です。${instructions}`, "success");
         }
         drawWorkDiagram();
       }
@@ -3183,20 +3243,110 @@
         };
       }
 
+      function getDiagramItemLocalPoint(item, point) {
+        const dx = point.x - item.x;
+        const dy = point.y - item.y;
+        const angle = -item.rotation * Math.PI / 180;
+        return {
+          x: dx * Math.cos(angle) - dy * Math.sin(angle),
+          y: dx * Math.sin(angle) + dy * Math.cos(angle)
+        };
+      }
+
+      function findDiagramTransformHandleAt(item, point) {
+        const localPoint = getDiagramItemLocalPoint(item, point);
+        const interfaceScale = getDiagramInterfaceScale();
+        const handles = getDiagramTransformHandles(item, interfaceScale);
+        for (let index = handles.length - 1; index >= 0; index -= 1) {
+          const handle = handles[index];
+          const dx = localPoint.x - handle.x;
+          const dy = localPoint.y - handle.y;
+          const hitSize = (handle.type === "rotate" ? 9 : 7) * interfaceScale;
+          if (Math.abs(dx) <= hitSize && Math.abs(dy) <= hitSize) {
+            return handle;
+          }
+        }
+        return null;
+      }
+
       function findDiagramItemAt(point) {
         for (let index = diagramState.items.length - 1; index >= 0; index -= 1) {
           const item = diagramState.items[index];
-          const dx = point.x - item.x;
-          const dy = point.y - item.y;
-          const angle = -item.rotation * Math.PI / 180;
-          const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
-          const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+          const localPoint = getDiagramItemLocalPoint(item, point);
           const dimensions = getDiagramItemDimensions(item);
-          if (Math.abs(localX) <= dimensions.length / 2 + 20 && Math.abs(localY) <= dimensions.width / 2 + 30) {
+          if (Math.abs(localPoint.x) <= dimensions.length / 2 + 20 && Math.abs(localPoint.y) <= dimensions.width / 2 + 30) {
             return item;
           }
         }
         return null;
+      }
+
+      function startDiagramItemTransform(item, handle, point, pointerId) {
+        const dimensions = getDiagramItemDimensions(item);
+        const interfaceScale = getDiagramInterfaceScale();
+        diagramState.dragItem = null;
+        diagramState.transformItem = {
+          id: item.id,
+          type: handle.type,
+          horizontal: handle.horizontal,
+          vertical: handle.vertical,
+          startX: item.x,
+          startY: item.y,
+          startRotation: item.rotation,
+          startLengthPx: dimensions.length,
+          startWidthPx: dimensions.width,
+          handleOffset: 8 * interfaceScale,
+          startPointerAngle: Math.atan2(point.y - item.y, point.x - item.x)
+        };
+        diagramControls.canvas.setPointerCapture(pointerId);
+      }
+
+      function updateDiagramItemTransform(point) {
+        const transform = diagramState.transformItem;
+        const item = diagramState.items.find((candidate) => candidate.id === transform.id);
+        if (!item) {
+          return;
+        }
+        if (transform.type === "rotate") {
+          const pointerAngle = Math.atan2(point.y - transform.startY, point.x - transform.startX);
+          const rotation = transform.startRotation + (pointerAngle - transform.startPointerAngle) * 180 / Math.PI;
+          item.rotation = ((rotation % 360) + 360) % 360;
+        } else {
+          const localPoint = getDiagramItemLocalPoint({
+            x: transform.startX,
+            y: transform.startY,
+            rotation: transform.startRotation
+          }, point);
+          const scale = getDiagramScale();
+          let centerX = 0;
+          let centerY = 0;
+          if (transform.horizontal) {
+            const fixedX = -transform.horizontal * transform.startLengthPx / 2;
+            const movingX = localPoint.x - transform.horizontal * transform.handleOffset;
+            const lengthMm = Math.max(
+              100,
+              Math.round(transform.horizontal * (movingX - fixedX) / scale / 100) * 100
+            );
+            item.lengthMm = lengthMm;
+            centerX = fixedX + transform.horizontal * lengthMm * scale / 2;
+          }
+          if (transform.vertical) {
+            const fixedY = -transform.vertical * transform.startWidthPx / 2;
+            const movingY = localPoint.y - transform.vertical * transform.handleOffset;
+            const widthMm = Math.max(
+              100,
+              Math.round(transform.vertical * (movingY - fixedY) / scale / 100) * 100
+            );
+            item.widthMm = widthMm;
+            centerY = fixedY + transform.vertical * widthMm * scale / 2;
+          }
+          const angle = transform.startRotation * Math.PI / 180;
+          item.x = transform.startX + centerX * Math.cos(angle) - centerY * Math.sin(angle);
+          item.y = transform.startY + centerX * Math.sin(angle) + centerY * Math.cos(angle);
+        }
+        diagramControls.itemLength.value = String(item.lengthMm);
+        diagramControls.itemWidth.value = String(item.widthMm);
+        drawWorkDiagram();
       }
 
       function stopDiagramScreenShare() {
@@ -3565,6 +3715,17 @@
           return;
         }
 
+        const selectedItem = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
+        if (selectedItem && selectedItem.type === "work-target") {
+          const handle = findDiagramTransformHandleAt(selectedItem, point);
+          if (handle) {
+            event.preventDefault();
+            diagramControls.canvas.style.cursor = handle.type === "rotate" ? "grabbing" : handle.cursor;
+            startDiagramItemTransform(selectedItem, handle, point, event.pointerId);
+            return;
+          }
+        }
+
         const item = findDiagramItemAt(point);
         setSelectedDiagramItem(item);
         if (item) {
@@ -3582,28 +3743,50 @@
           drawWorkDiagram();
           return;
         }
+        const point = getDiagramPoint(event);
+        if (diagramState.transformItem) {
+          updateDiagramItemTransform(point);
+          return;
+        }
         if (!diagramState.dragItem) {
+          const selectedItem = diagramState.items.find((candidate) => candidate.id === diagramState.selectedId);
+          const handle = selectedItem && selectedItem.type === "work-target"
+            ? findDiagramTransformHandleAt(selectedItem, point)
+            : null;
+          diagramControls.canvas.style.cursor = handle ? handle.cursor : "";
           return;
         }
         const item = diagramState.items.find((candidate) => candidate.id === diagramState.dragItem.id);
         if (!item) {
           return;
         }
-        const point = getDiagramPoint(event);
         item.x = point.x + diagramState.dragItem.offsetX;
         item.y = point.y + diagramState.dragItem.offsetY;
         drawWorkDiagram();
       });
       diagramControls.canvas.addEventListener("pointerup", () => {
+        const transform = diagramState.transformItem;
+        if (transform) {
+          diagramState.transformItem = null;
+          setDiagramStatus(
+            transform.type === "rotate" ? "作業対象の向きを調整しました。" : "作業対象の長さ・太さを調整しました。",
+            "success"
+          );
+        }
         diagramState.dragItem = null;
+        diagramControls.canvas.style.cursor = "";
       });
       diagramControls.canvas.addEventListener("pointercancel", () => {
+        diagramState.transformItem = null;
         diagramState.dragItem = null;
+        diagramControls.canvas.style.cursor = "";
       });
       diagramControls.canvas.addEventListener("pointerleave", () => {
         if (diagramState.drawing && diagramState.drawing.type === "zone") {
           diagramState.drawing.cursor = null;
           drawWorkDiagram();
+        } else if (!diagramState.transformItem && !diagramState.dragItem) {
+          diagramControls.canvas.style.cursor = "";
         }
       });
       diagramControls.itemLength.addEventListener("change", () => updateSelectedDiagramDimension(diagramControls.itemLength, "lengthMm"));
