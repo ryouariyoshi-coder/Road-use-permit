@@ -761,6 +761,10 @@
 
     .work-diagram-section {
       margin-top: 28px;
+    }
+
+    .diagram-editor-panel {
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: var(--paper);
@@ -771,6 +775,148 @@
       display: grid;
       gap: 12px;
       padding: 18px 22px;
+    }
+
+    .diagram-document {
+      display: flex;
+      width: min(100%, 794px);
+      aspect-ratio: 210 / 297;
+      flex-direction: column;
+      gap: 0;
+      margin: 20px auto 0;
+      padding: 12% 12% 6%;
+      border: 1px solid #d5dad6;
+      background: #fff;
+      box-shadow: 0 8px 28px rgb(34 55 46 / 9%);
+      color: #111;
+    }
+
+    .diagram-document-header {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      min-height: 42px;
+    }
+
+    .diagram-location {
+      display: flex;
+      width: 75%;
+      min-width: 0;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .diagram-location-value {
+      width: 0;
+      min-width: 0;
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .diagram-document-title {
+      width: 60%;
+      align-self: center;
+      margin: 0;
+      padding: 0 0 5px;
+      border-bottom: 1px solid #333;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .diagram-legend {
+      display: grid;
+      width: max-content;
+      gap: 4px;
+      margin: 54px 0 24px 12%;
+      padding: 0;
+      list-style: none;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .diagram-legend li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-legend-mark {
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      height: 12px;
+      flex: 0 0 30px;
+    }
+
+    .diagram-legend-mark::before,
+    .diagram-legend-mark::after {
+      position: absolute;
+      display: block;
+      content: "";
+    }
+
+    .diagram-legend-mark[data-mark="zone"]::before {
+      top: 5px;
+      right: 2px;
+      left: 2px;
+      border-top: 2px solid #e12e37;
+    }
+
+    .diagram-legend-mark[data-mark="zone"]::after {
+      top: 2px;
+      left: 3px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #e12e37;
+      box-shadow: 9px 0 #e12e37, 18px 0 #e12e37;
+    }
+
+    .diagram-legend-mark[data-mark="staff"]::before {
+      top: 2px;
+      left: 10px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #164cdf;
+    }
+
+    .diagram-legend-mark[data-mark="vehicle"]::before {
+      top: 1px;
+      left: 5px;
+      width: 20px;
+      height: 10px;
+      border: 1px solid #452b82;
+      background: #9c83d6;
+    }
+
+    .diagram-legend-mark[data-mark="vehicle-alt"]::before {
+      top: 1px;
+      left: 8px;
+      width: 14px;
+      height: 10px;
+      border: 1px solid #452b82;
+      background: #c3b4e8;
+      box-shadow: -4px 3px 0 -1px #8768c0;
+    }
+
+    .diagram-legend-mark[data-mark="target"]::before {
+      top: 4px;
+      left: 5px;
+      width: 20px;
+      height: 4px;
+      background: #e12e37;
+    }
+
+    .diagram-drawing-frame {
+      display: grid;
+      min-height: 0;
+      flex: 1;
+      place-items: center;
+      border: 1px solid #555;
+      background: #fff;
     }
 
     .diagram-toolbar,
@@ -802,18 +948,21 @@
     }
 
     .diagram-canvas-wrap {
-      max-height: 620px;
-      margin: 0 22px 18px;
-      overflow: auto;
-      border: 1px solid #cbd6d0;
-      border-radius: 8px;
-      background: #eef1ed;
+      display: grid;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      place-items: center;
+      overflow: hidden;
+      background: #fff;
     }
 
     .diagram-canvas {
       display: block;
       width: 100%;
       height: auto;
+      max-height: 100%;
+      object-fit: contain;
       background: #fff;
     }
 
@@ -1185,32 +1334,31 @@
       body.print-work-diagram .work-diagram-section {
         display: block !important;
         width: 210mm;
-        min-height: 297mm;
         margin: 0;
-        padding: 10mm;
+        padding: 0;
+      }
+
+      body.print-work-diagram .diagram-editor-panel {
+        display: none;
+      }
+
+      body.print-work-diagram .diagram-document {
+        width: 210mm;
+        height: 297mm;
+        aspect-ratio: auto;
+        margin: 0;
+        padding: 35mm 25mm 15mm;
         border: 0;
-        border-radius: 0;
         box-shadow: none;
       }
 
-      body.print-work-diagram .work-diagram-controls {
-        display: none;
+      body.print-work-diagram .diagram-legend {
+        margin-top: 14mm;
+        margin-bottom: 8mm;
       }
 
       body.print-work-diagram .diagram-canvas-wrap {
         max-height: none;
-        margin: 0;
-        overflow: visible;
-        border: 0;
-      }
-
-      body.print-work-diagram .diagram-canvas {
-        width: 180mm !important;
-        max-height: 250mm;
-      }
-
-      body.print-work-diagram .panel-heading {
-        padding: 0 0 8mm;
       }
     }
   </style>
@@ -1507,45 +1655,66 @@
     </section>
 
     <section class="work-diagram-section attachments-section" aria-labelledby="work-diagram-title">
-      <div class="panel-heading">
-        <h2 id="work-diagram-title">作業体図</h2>
-        <span class="step">STEP 3 / 5</span>
-      </div>
-      <div class="work-diagram-controls">
-        <p class="map-service-note">背景画像を読み込み、実測で分かる2点間の距離を使って縮尺を合わせます。コーン・バリケード・作業車両を追加して配置できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
-        <div class="diagram-toolbar">
-          <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-          <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
-          <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
-          <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
-          <button class="attachment-button" type="button" data-add-diagram-item="vehicle">作業車両を追加</button>
-          <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
+      <div class="diagram-editor-panel">
+        <div class="panel-heading">
+          <h2 id="work-diagram-title">作業体図</h2>
+          <span class="step">STEP 3 / 5</span>
         </div>
-        <div class="diagram-calibration">
-          <label class="diagram-field">実測した2点間の距離（mm）
-            <input type="number" data-diagram-calibration-distance min="1" step="1" placeholder="例：10000">
-          </label>
-          <button class="attachment-button" type="button" data-start-diagram-calibration>2点を選んで縮尺を設定</button>
-          <label class="diagram-field">表示倍率
-            <input type="range" data-diagram-zoom min="50" max="200" value="100" step="10">
-          </label>
+        <div class="work-diagram-controls">
+          <p class="map-service-note">背景画像を読み込み、実測で分かる2点間の距離を使って縮尺を合わせます。コーン・バリケード・作業車両を追加して配置できます。保存ボタンを押すと、画像と作図内容も現場データと一緒に保存されます。</p>
+          <div class="diagram-toolbar">
+            <input class="diagram-background-input" id="diagram-background-input" data-diagram-background-input type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <label class="attachment-button" for="diagram-background-input">背景画像を選択</label>
+            <button class="attachment-button" type="button" data-add-diagram-item="cone">カラーコーンを追加</button>
+            <button class="attachment-button" type="button" data-add-diagram-item="barrier">バリケードを追加</button>
+            <button class="attachment-button" type="button" data-add-diagram-item="vehicle">作業車両を追加</button>
+            <button class="attachment-button" type="button" data-print-work-diagram>作業体図を印刷</button>
+          </div>
+          <div class="diagram-calibration">
+            <label class="diagram-field">実測した2点間の距離（mm）
+              <input type="number" data-diagram-calibration-distance min="1" step="1" placeholder="例：10000">
+            </label>
+            <button class="attachment-button" type="button" data-start-diagram-calibration>2点を選んで縮尺を設定</button>
+            <label class="diagram-field">表示倍率
+              <input type="range" data-diagram-zoom min="50" max="200" value="100" step="10">
+            </label>
+          </div>
+          <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
+            <label class="diagram-field">長さ（mm・100mm刻み）
+              <input type="number" data-diagram-item-length min="100" step="100">
+            </label>
+            <label class="diagram-field">幅（mm・100mm刻み）
+              <input type="number" data-diagram-item-width min="100" step="100">
+            </label>
+            <button class="attachment-button" type="button" data-rotate-diagram-item="-15">左へ15°</button>
+            <button class="attachment-button" type="button" data-rotate-diagram-item="15">右へ15°</button>
+            <button class="attachment-button" type="button" data-delete-diagram-item>選択アイテムを削除</button>
+          </div>
+          <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。縮尺を設定するまでは、作図アイテムの寸法は画面上の目安です。</p>
         </div>
-        <div class="diagram-selection-controls" data-diagram-selection-controls hidden>
-          <label class="diagram-field">長さ（mm・100mm刻み）
-            <input type="number" data-diagram-item-length min="100" step="100">
-          </label>
-          <label class="diagram-field">幅（mm・100mm刻み）
-            <input type="number" data-diagram-item-width min="100" step="100">
-          </label>
-          <button class="attachment-button" type="button" data-rotate-diagram-item="-15">左へ15°</button>
-          <button class="attachment-button" type="button" data-rotate-diagram-item="15">右へ15°</button>
-          <button class="attachment-button" type="button" data-delete-diagram-item>選択アイテムを削除</button>
+      </div>
+      <article class="diagram-document" aria-label="作業形態図の編集プレビュー">
+        <header class="diagram-document-header">
+          <div class="diagram-location">
+            <span>場所</span>
+            <span class="editable diagram-location-value" data-preview="location" data-placeholder="現場住所" contenteditable="true" role="textbox" aria-label="作業形態図の場所"></span>
+            <span>付近</span>
+          </div>
+          <h3 class="diagram-document-title">作業形態図</h3>
+        </header>
+        <ul class="diagram-legend" aria-label="作業形態図の凡例">
+          <li><span class="diagram-legend-mark" data-mark="zone" aria-hidden="true"></span>区画（カラーコーン・バー）</li>
+          <li><span class="diagram-legend-mark" data-mark="staff" aria-hidden="true"></span>交通誘導員</li>
+          <li><span class="diagram-legend-mark" data-mark="vehicle" aria-hidden="true"></span>作業車両（高所作業車）</li>
+          <li><span class="diagram-legend-mark" data-mark="vehicle-alt" aria-hidden="true"></span>作業車両（揚重車）</li>
+          <li><span class="diagram-legend-mark" data-mark="target" aria-hidden="true"></span>作業対象</li>
+        </ul>
+        <div class="diagram-drawing-frame">
+          <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
+            <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
+          </div>
         </div>
-        <p class="diagram-status" data-diagram-status role="status" aria-live="polite">背景画像を選択してください。縮尺を設定するまでは、作図アイテムの寸法は画面上の目安です。</p>
-      </div>
-      <div class="diagram-canvas-wrap" data-diagram-canvas-wrap data-mode="move">
-        <canvas class="diagram-canvas" data-work-diagram-canvas aria-label="作業体図編集キャンバス"></canvas>
-      </div>
+      </article>
     </section>
 
     <footer>申請書の最新様式・提出条件は、提出先の警察署でご確認ください。</footer>
